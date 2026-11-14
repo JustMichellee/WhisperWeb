@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+:root,
+[data-theme="dark"] {
+  --bg-app: #262D35;
+  --bg-sidebar: #303841;
+  --bg-input: #242A32;
+  --bg-hover: #38414B;
+  --bg-active: #3D4C52;
+  --bubble-out: #315155;
+  --bubble-in: #363F49;
+  --reply-out-bg: #274145;
+  --reply-in-bg: #2C343D;
+  --accent-primary: #FF5722;
+  --accent-hover: #FF6D3F;
+  --accent-fg: #181D23;
+  --read-receipt: #9AD3D6;
+  --text-primary: #F5F5F5;
+  --text-secondary: #B6C0CA;
+  --text-bubble-out-meta: #C5DCDE;
+  --border-subtle: #3B4450;
+  --status-e2ee: #76ABAE;
+  --status-warning: #F59E0B;
+  --status-danger: #FF7D52;
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg-app: #EAECEE;
+  --bg-sidebar: #F5F5F5;
+  --bg-input: #FFFFFF;
+  --bg-hover: #E7EAED;
+  --bg-active: #DFE7E8;
+  --bubble-out: #D9E8E9;
+  --bubble-in: #FFFFFF;
+  --reply-out-bg: #C7DBDD;
+  --reply-in-bg: #E7EBEE;
+  --accent-primary: #FF5722;
+  --accent-hover: #E64A19;
+  --accent-fg: #181D23;
+  --read-receipt: #2B5B5E;
+  --text-primary: #303841;
+  --text-secondary: #535F6B;
+  --text-bubble-out-meta: #45545B;
+  --border-subtle: #CFD5DC;
+  --status-e2ee: #47787B;
+  --status-warning: #B45309;
+  --status-danger: #C83B12;
+  color-scheme: light;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+    font-family: "Plus Jakarta Sans", "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Enforce pointer affordance on enabled interactive controls (R-39) */
+  a[href],
+  button,
+  summary,
+  select,
+  label[for],
+  label:has(> input[type="checkbox"], > input[type="radio"]),
+  [role="button"],
+  [role="tab"],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="file"] {
+    cursor: pointer;
+  }
+
+  :disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+.font-mono-code {
+  font-family: "Cascadia Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.chat-canvas-surface {
+  background-color: var(--bg-app);
+}
+
+/* Custom subtle scrollbars matching messenger theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text-secondary) 35%, transparent);
+  border-radius: 3px;
+}

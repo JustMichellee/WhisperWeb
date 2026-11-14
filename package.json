@@ -1,0 +1,22 @@
+{
+  "name": "whisperweb-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c cyan,green \"npm run dev --workspace=@chat/server\" \"npm run dev --workspace=@chat/web\"",
+    "build": "npm run build --workspace=@chat/shared && npm run build --workspace=@chat/server && npm run build --workspace=@chat/web",
+    "typecheck": "npm run typecheck --workspace=@chat/shared && npm run typecheck --workspace=@chat/server && npm run typecheck --workspace=@chat/web",
+    "test": "npm run test --workspace=@chat/server && npm run test --workspace=@chat/web",
+    "db:push": "npm run db:push --workspace=@chat/server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.8.2"
+  }
+}
+
