@@ -189,19 +189,6 @@ export const Sidebar: FC<SidebarProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          <div
-            title={wsConnected ? 'Koneksi WebSocket & E2EE aktif' : 'Menghubungkan ke server'}
-            className="hidden sm:inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-canvas)] text-[10px] font-medium uppercase tracking-wide text-[var(--text-secondary)]"
-          >
-            <span
-              aria-hidden="true"
-              className={`w-1.5 h-1.5 rounded-full ${
-                wsConnected ? 'bg-emerald-400 animate-pulse' : 'bg-[var(--status-warning)]'
-              }`}
-            />
-            <span>{wsConnected ? 'E2EE Live' : 'Sync'}</span>
-          </div>
-
           <button
             type="button"
             onClick={() => void refreshConversations(token, user, privateKey)}
