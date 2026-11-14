@@ -15,6 +15,13 @@ import { apiClient } from '../../services/api';
 import { useAuthStore } from '../../stores/useAuthStore';
 import type { UiMessage } from '../../stores/useChatStore';
 import { formatMessageText } from '../../utils/formatMessageText';
+import { Bubble, BubbleContent } from '../ui/bubble';
+import {
+  Message,
+  MessageContent,
+  MessageFooter,
+  MessageHeader,
+} from '../ui/message';
 
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
@@ -35,6 +42,7 @@ interface MessageBubbleProps {
   message: UiMessage;
   isMine: boolean;
   isFirstInGroup: boolean;
+  isLastInGroup?: boolean;
   showSenderName: boolean;
   senderName: string;
   otherMemberCount: number;
@@ -49,6 +57,7 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
   message,
   isMine,
   isFirstInGroup,
+  isLastInGroup = true,
   showSenderName,
   senderName,
   otherMemberCount,
@@ -124,10 +133,38 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
     }
   };
 
-  const renderReceiptIcon = () => {
-    if (!isMine) return null;
+  const renderReceiptFooter = () => {
+    const timeText = formatTime(message.createdAt);
+
+    if (!isMine) {
+      if (!isLastInGroup || isFirstInGroup) return null;
+      return (
+        <MessageFooter>
+          <span className="tabular-nums">{timeText}</span>
+        </MessageFooter>
+      );
+    }
+
+    if (!isLastInGroup && message.localStatus !== 'pending') {
+      return null;
+    }
+
+    if (message.isDeleted) {
+      return (
+        <MessageFooter>
+          <span className="tabular-nums">{timeText}</span>
+        </MessageFooter>
+      );
+    }
+
     if (message.localStatus === 'pending') {
-      return <Clock className="w-3.5 h-3.5 text-[var(--text-bubble-out-meta)]" aria-label="Mengirim" />;
+      return (
+        <MessageFooter className="gap-1">
+          <Clock className="w-3 h-3 shrink-0" aria-hidden="true" />
+          <span>Mengirim</span>
+          <span className="tabular-nums">{timeText}</span>
+        </MessageFooter>
+      );
     }
 
     const othersReceipts = message.receipts.filter((r) => r.userId !== user?.id);
@@ -139,25 +176,28 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
 
     if (allRead || (otherMemberCount === 1 && anyRead)) {
       return (
-        <CheckCheck
-          className="w-4 h-4 text-[var(--read-receipt)]"
-          aria-label="Dibaca"
-        />
+        <MessageFooter className="gap-1 text-[var(--read-receipt)]">
+          <CheckCheck className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+          <span className="font-medium">Dibaca</span>
+          <span className="tabular-nums">{timeText}</span>
+        </MessageFooter>
       );
     }
     if (anyDelivered) {
       return (
-        <CheckCheck
-          className="w-4 h-4 text-[var(--text-bubble-out-meta)]"
-          aria-label="Diterima perangkat"
-        />
+        <MessageFooter className="gap-1">
+          <CheckCheck className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+          <span>Diterima</span>
+          <span className="tabular-nums">{timeText}</span>
+        </MessageFooter>
       );
     }
     return (
-      <Check
-        className="w-3.5 h-3.5 text-[var(--text-bubble-out-meta)]"
-        aria-label="Terkirim ke server"
-      />
+      <MessageFooter className="gap-1">
+        <Check className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+        <span>Terkirim</span>
+        <span className="tabular-nums">{timeText}</span>
+      </MessageFooter>
     );
   };
 
@@ -178,36 +218,48 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
     ? 'text-[var(--text-bubble-out-meta)]'
     : 'text-[var(--text-secondary)]';
 
-  const cornerClass = isMine
-    ? isFirstInGroup
-      ? 'rounded-[22px] rounded-br-[6px]'
-      : 'rounded-[22px]'
-    : isFirstInGroup
-      ? 'rounded-[22px] rounded-bl-[6px]'
-      : 'rounded-[22px]';
+  const cornerClass = isLastInGroup
+    ? isMine
+      ? 'rounded-br-[6px]'
+      : 'rounded-bl-[6px]'
+    : '';
+
+  const exactTimeLabel = formatTime(message.createdAt);
 
   return (
-    <div
+    <Message
       id={`message-${message.id}`}
-      className={`group flex flex-col ${isMine ? 'items-end' : 'items-start'} ${
-        isFirstInGroup ? 'mt-3' : 'mt-1'
-      }`}
+      align={isMine ? 'end' : 'start'}
+      className={isFirstInGroup ? 'mt-3.5' : 'mt-0.5'}
     >
-      <div className={`flex items-end gap-1.5 max-w-[85%] md:max-w-[65%] ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
-        <div
-          className={`relative px-4 py-2.5 shadow-sm ${cornerClass} ${
-            isMine
-              ? 'bg-[var(--bubble-out)] text-[var(--text-primary)]'
-              : 'bg-[var(--bubble-in)] text-[var(--text-primary)] border border-[var(--border-subtle)]'
-          }`}
-        >
-          {showSenderName && !isMine && isFirstInGroup && (
-            <p className="text-xs font-semibold text-[var(--status-e2ee)] mb-1">
+      <MessageContent>
+        {!isMine && isFirstInGroup && (
+          <MessageHeader className="gap-1.5">
+            <span
+              className={
+                showSenderName
+                  ? 'font-semibold text-[var(--status-e2ee)]'
+                  : 'font-medium text-[var(--text-primary)]'
+              }
+            >
               {senderName}
-            </p>
-          )}
+            </span>
+            <span
+              aria-hidden="true"
+              className="w-1 h-1 shrink-0 rounded-full bg-[var(--text-secondary)]/45"
+            />
+            <span className="tabular-nums">{exactTimeLabel}</span>
+          </MessageHeader>
+        )}
 
-          {message.isDeleted ? (
+        <div className={`flex items-end gap-1.5 max-w-full ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
+          <Bubble
+            variant={isMine ? 'default' : 'muted'}
+            title={exactTimeLabel}
+            className={cornerClass}
+          >
+            <BubbleContent>
+              {message.isDeleted ? (
             <p className={`text-sm italic ${metaColorClass}`}>Pesan ini telah dihapus</p>
           ) : message.decryptError || !message.decrypted ? (
             <div className="flex items-center gap-2 text-sm italic text-[var(--status-warning)]">
@@ -289,136 +341,135 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
               )}
 
               {message.decrypted.text && (
-                <p className="text-[14.5px] leading-[1.45] whitespace-pre-wrap break-words">
+                <p className="whitespace-pre-wrap break-words">
                   {formatMessageText(message.decrypted.text)}
                 </p>
               )}
             </div>
           )}
+            </BubbleContent>
+          </Bubble>
 
-          <div className={`mt-1 flex items-center justify-end gap-1 text-[11px] tabular-nums ${metaColorClass}`}>
-            <span>{formatTime(message.createdAt)}</span>
-            {renderReceiptIcon()}
-          </div>
-        </div>
-
-        {!message.isDeleted && (
-          <div className="relative flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100 transition-opacity">
-            <button
-              type="button"
-              onClick={() => onReply(message)}
-              aria-label="Balas pesan ini"
-              title="Balas"
-              className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
-            >
-              <Reply className="w-4 h-4" aria-hidden="true" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setShowReactBar((prev) => !prev);
-                setShowDeleteMenu(false);
-              }}
-              aria-label="Beri reaksi emoji"
-              title="Reaksi"
-              className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
-            >
-              <SmilePlus className="w-4 h-4" aria-hidden="true" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setShowDeleteMenu((prev) => !prev);
-                setShowReactBar(false);
-              }}
-              aria-label="Opsi hapus pesan"
-              title="Hapus"
-              className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--status-danger)] hover:bg-[var(--bg-hover)]"
-            >
-              <Trash2 className="w-4 h-4" aria-hidden="true" />
-            </button>
-
-            {showReactBar && (
-              <div
-                className={`absolute bottom-9 z-20 flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] shadow-lg ${
-                  isMine ? 'right-0' : 'left-0'
-                }`}
+          {!message.isDeleted && (
+            <div className="relative flex shrink-0 items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100 transition-opacity">
+              <button
+                type="button"
+                onClick={() => onReply(message)}
+                aria-label="Balas pesan ini"
+                title="Balas"
+                className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
               >
-                {QUICK_REACTIONS.map((emoji) => (
-                  <button
-                    key={emoji}
-                    type="button"
-                    onClick={() => {
-                      const alreadyMine = message.reactions.some(
-                        (r) => r.userId === user?.id && r.emoji === emoji
-                      );
-                      onReact(message.id, alreadyMine ? null : emoji);
-                      setShowReactBar(false);
-                    }}
-                    className="w-8 h-8 rounded-full hover:bg-[var(--bg-hover)] text-base flex items-center justify-center"
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-            )}
+                <Reply className="w-4 h-4" aria-hidden="true" />
+              </button>
 
-            {showDeleteMenu && (
-              <div
-                className={`absolute bottom-9 z-20 w-44 py-1.5 rounded-2xl bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] shadow-lg text-xs ${
-                  isMine ? 'right-0' : 'left-0'
-                }`}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowReactBar((prev) => !prev);
+                  setShowDeleteMenu(false);
+                }}
+                aria-label="Beri reaksi emoji"
+                title="Reaksi"
+                className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
               >
-                <button
-                  type="button"
-                  onClick={() => {
-                    onDelete(message.id, 'me');
-                    setShowDeleteMenu(false);
-                  }}
-                  className="w-full text-left px-3 py-2 hover:bg-[var(--bg-hover)] text-[var(--text-primary)]"
+                <SmilePlus className="w-4 h-4" aria-hidden="true" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDeleteMenu((prev) => !prev);
+                  setShowReactBar(false);
+                }}
+                aria-label="Opsi hapus pesan"
+                title="Hapus"
+                className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--status-danger)] hover:bg-[var(--bg-hover)]"
+              >
+                <Trash2 className="w-4 h-4" aria-hidden="true" />
+              </button>
+
+              {showReactBar && (
+                <div
+                  className={`absolute bottom-9 z-20 flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] shadow-lg ${
+                    isMine ? 'right-0' : 'left-0'
+                  }`}
                 >
-                  Hapus untuk saya
-                </button>
-                {isMine && (
+                  {QUICK_REACTIONS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => {
+                        const alreadyMine = message.reactions.some(
+                          (r) => r.userId === user?.id && r.emoji === emoji
+                        );
+                        onReact(message.id, alreadyMine ? null : emoji);
+                        setShowReactBar(false);
+                      }}
+                      className="w-8 h-8 rounded-full hover:bg-[var(--bg-hover)] text-base flex items-center justify-center"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {showDeleteMenu && (
+                <div
+                  className={`absolute bottom-9 z-20 w-44 py-1.5 rounded-2xl bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] shadow-lg text-xs ${
+                    isMine ? 'right-0' : 'left-0'
+                  }`}
+                >
                   <button
                     type="button"
                     onClick={() => {
-                      onDelete(message.id, 'everyone');
+                      onDelete(message.id, 'me');
                       setShowDeleteMenu(false);
                     }}
-                    className="w-full text-left px-3 py-2 hover:bg-[var(--bg-hover)] text-[var(--status-danger)]"
+                    className="w-full text-left px-3 py-2 hover:bg-[var(--bg-hover)] text-[var(--text-primary)]"
                   >
-                    Hapus untuk semua orang
+                    Hapus untuk saya
                   </button>
-                )}
-              </div>
-            )}
+                  {isMine && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onDelete(message.id, 'everyone');
+                        setShowDeleteMenu(false);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-[var(--bg-hover)] text-[var(--status-danger)]"
+                    >
+                      Hapus untuk semua orang
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {Object.keys(groupedReactions).length > 0 && !message.isDeleted && (
+          <div className="flex flex-wrap gap-1 px-1">
+            {Object.entries(groupedReactions).map(([emoji, info]) => (
+              <button
+                key={emoji}
+                type="button"
+                onClick={() => onReact(message.id, info.mine ? null : emoji)}
+                className={`px-2.5 py-0.5 rounded-full text-xs tabular-nums border flex items-center gap-1 ${
+                  info.mine
+                    ? 'bg-[var(--bg-active)] border-[var(--status-e2ee)] text-[var(--text-primary)]'
+                    : 'bg-[var(--bg-sidebar)] border-[var(--border-subtle)] text-[var(--text-secondary)]'
+                }`}
+              >
+                <span>{emoji}</span>
+                <span>{info.count}</span>
+              </button>
+            ))}
           </div>
         )}
-      </div>
 
-      {Object.keys(groupedReactions).length > 0 && !message.isDeleted && (
-        <div className="flex flex-wrap gap-1 mt-1 px-1">
-          {Object.entries(groupedReactions).map(([emoji, info]) => (
-            <button
-              key={emoji}
-              type="button"
-              onClick={() => onReact(message.id, info.mine ? null : emoji)}
-              className={`px-2.5 py-0.5 rounded-full text-xs tabular-nums border flex items-center gap-1 ${
-                info.mine
-                  ? 'bg-[var(--bg-active)] border-[var(--status-e2ee)] text-[var(--text-primary)]'
-                  : 'bg-[var(--bg-sidebar)] border-[var(--border-subtle)] text-[var(--text-secondary)]'
-              }`}
-            >
-              <span>{emoji}</span>
-              <span>{info.count}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+        {renderReceiptFooter()}
+      </MessageContent>
+    </Message>
   );
 };
 

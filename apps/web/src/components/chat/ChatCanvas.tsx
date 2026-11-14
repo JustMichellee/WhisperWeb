@@ -365,10 +365,15 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
           ) : (
             visibleMessages.map((msg, idx) => {
               const prev = visibleMessages[idx - 1];
+              const next = visibleMessages[idx + 1];
               const showDateDivider =
                 !prev ||
                 new Date(prev.createdAt).toDateString() !== new Date(msg.createdAt).toDateString();
+              const nextShowsDateDivider =
+                !next ||
+                new Date(next.createdAt).toDateString() !== new Date(msg.createdAt).toDateString();
               const isFirstInGroup = showDateDivider || !prev || prev.senderId !== msg.senderId;
+              const isLastInGroup = nextShowsDateDivider || !next || next.senderId !== msg.senderId;
               const sender = conversation.members.find((m) => m.userId === msg.senderId);
 
               return (
@@ -384,6 +389,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
                     message={msg}
                     isMine={msg.senderId === user.id}
                     isFirstInGroup={isFirstInGroup}
+                    isLastInGroup={isLastInGroup}
                     showSenderName={isGroup}
                     senderName={sender?.displayName ?? 'Pengguna'}
                     otherMemberCount={Math.max(conversation.members.length - 1, 1)}
