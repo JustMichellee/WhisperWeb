@@ -219,7 +219,7 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
             onSubmit={(e) => void handleSaveGroupEdit(e)}
             className="p-4 rounded-2xl bg-[var(--bg-app)] border border-[var(--border-subtle)] space-y-3"
           >
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <input
                 ref={groupIconInputRef}
                 type="file"

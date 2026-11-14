@@ -89,16 +89,18 @@ export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onCl
     <>
       <Modal open={open} title={t('settings.modalTitle')} onClose={onClose}>
         <div className="space-y-5">
-          <div className="flex items-center justify-between gap-3.5 pb-4 border-b border-[var(--border-subtle)]">
+          <div className="flex flex-col gap-3.5 pb-4 border-b border-[var(--border-subtle)]">
             <div className="flex items-center gap-3.5 min-w-0">
               <Avatar name={displayName || user.displayName} avatarUrl={avatarUrl} size="lg" />
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-base font-semibold truncate">{displayName || user.displayName}</p>
-                <p className="text-sm text-[var(--text-secondary)] font-mono-code">@{user.username}</p>
+                <p className="text-sm text-[var(--text-secondary)] font-mono-code truncate">
+                  @{user.username}
+                </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex flex-wrap items-center gap-1.5 shrink-0">
               <input
                 ref={avatarInputRef}
                 type="file"
@@ -113,9 +115,9 @@ export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onCl
               <button
                 type="button"
                 onClick={() => avatarInputRef.current?.click()}
-                className="px-3 py-1.5 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-xs font-medium flex items-center gap-1.5 hover:bg-[var(--bg-hover)]"
+                className="px-3 py-1.5 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-xs font-medium inline-flex items-center gap-1.5 whitespace-nowrap hover:bg-[var(--bg-hover)]"
               >
-                <Camera className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
+                <Camera className="w-3.5 h-3.5 text-[var(--status-e2ee)] shrink-0" aria-hidden="true" />
                 <span>{t('settings.changePhoto')}</span>
               </button>
               {avatarUrl && (
@@ -125,9 +127,9 @@ export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onCl
                     onClick={() => openExistingForCrop(avatarUrl)}
                     aria-label={t('settings.adjustPhotoAria')}
                     title={t('settings.adjustPhotoTitle')}
-                    className="px-2.5 py-1.5 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-xs font-medium flex items-center gap-1 hover:bg-[var(--bg-hover)]"
+                    className="px-2.5 py-1.5 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-xs font-medium inline-flex items-center gap-1 whitespace-nowrap hover:bg-[var(--bg-hover)]"
                   >
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-[var(--status-e2ee)] shrink-0" aria-hidden="true" />
                     <span>{t('common.adjust')}</span>
                   </button>
                   <button

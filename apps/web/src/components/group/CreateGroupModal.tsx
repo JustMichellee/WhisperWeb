@@ -107,7 +107,7 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) =
               isGroup={true}
               size="lg"
             />
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
               <input
                 ref={iconInputRef}
                 type="file"
@@ -122,9 +122,9 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) =
               <button
                 type="button"
                 onClick={() => iconInputRef.current?.click()}
-                className="px-3 py-1.5 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-xs font-medium flex items-center gap-1.5 hover:bg-[var(--bg-hover)]"
+                className="px-3 py-1.5 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-xs font-medium inline-flex items-center gap-1.5 whitespace-nowrap hover:bg-[var(--bg-hover)]"
               >
-                <Camera className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
+                <Camera className="w-3.5 h-3.5 text-[var(--status-e2ee)] shrink-0" aria-hidden="true" />
                 <span>{avatarUrl ? t('createGroup.changeIcon') : t('createGroup.chooseIcon')}</span>
               </button>
               {avatarUrl && (
@@ -134,9 +134,9 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) =
                     onClick={() => openExistingForCrop(avatarUrl)}
                     aria-label={t('createGroup.adjustIconAria')}
                     title={t('createGroup.adjustIconTitle')}
-                    className="px-2.5 py-1.5 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-xs font-medium flex items-center gap-1 hover:bg-[var(--bg-hover)]"
+                    className="px-2.5 py-1.5 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-xs font-medium inline-flex items-center gap-1 whitespace-nowrap hover:bg-[var(--bg-hover)]"
                   >
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-[var(--status-e2ee)] shrink-0" aria-hidden="true" />
                     <span>{t('common.adjust')}</span>
                   </button>
                   <button
