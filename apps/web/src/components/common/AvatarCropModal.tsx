@@ -13,6 +13,7 @@ import {
   computeCropLayout,
   renderCroppedAvatarDataUrl,
 } from '../../utils/imageResize';
+import { useT } from '../../stores/useI18nStore';
 import { Modal } from './Modal';
 
 interface AvatarCropModalProps {
@@ -24,10 +25,12 @@ interface AvatarCropModalProps {
 
 export const AvatarCropModal: FC<AvatarCropModalProps> = ({
   imageSrc,
-  title = 'Atur Foto Profil',
+  title,
   onCancel,
   onConfirm,
 }) => {
+  const { t } = useT();
+  const resolvedTitle = title ?? t('cropModal.defaultTitle');
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [rotationDeg, setRotationDeg] = useState(0);
@@ -171,22 +174,22 @@ export const AvatarCropModal: FC<AvatarCropModalProps> = ({
       });
       onConfirm(dataUrl);
     } catch (err) {
-      setLoadError(err instanceof Error ? err.message : 'Gagal memproses gambar.');
+      setLoadError(err instanceof Error ? err.message : t('cropModal.processError'));
     }
   };
 
   return (
-    <Modal open={Boolean(imageSrc)} title={title} onClose={onCancel} maxWidthClass="max-w-sm">
+    <Modal open={Boolean(imageSrc)} title={resolvedTitle} onClose={onCancel} maxWidthClass="max-w-sm">
       <div className="space-y-4">
         <p className="text-xs text-[var(--text-secondary)] text-center">
-          Geser posisi atau atur zoom agar pas di dalam lingkaran.
+          {t('cropModal.hint')}
         </p>
 
         <div className="flex justify-center">
           <div
             role="application"
             tabIndex={0}
-            aria-label="Area atur posisi foto. Gunakan drag mouse, sentuh, atau tombol panah."
+            aria-label={t('cropModal.viewportAria')}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
@@ -200,13 +203,13 @@ export const AvatarCropModal: FC<AvatarCropModalProps> = ({
               <img
                 ref={imgRef}
                 src={imageSrc}
-                alt="Pratinjau crop foto"
+                alt={t('cropModal.previewAlt')}
                 draggable={false}
                 onLoad={(e) => {
                   const el = e.currentTarget;
                   setNaturalSize({ w: el.naturalWidth, h: el.naturalHeight });
                 }}
-                onError={() => setLoadError('Gambar tidak dapat dimuat.')}
+                onError={() => setLoadError(t('cropModal.loadError'))}
                 style={
                   layout
                     ? {
@@ -235,7 +238,7 @@ export const AvatarCropModal: FC<AvatarCropModalProps> = ({
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
             <label htmlFor="avatar-zoom-slider" className="font-medium text-[var(--text-secondary)]">
-              Zoom
+              {t('cropModal.zoomLabel')}
             </label>
             <span className="tabular-nums text-[var(--text-primary)] font-medium">
               {Math.round(zoom * 100)}%
@@ -245,7 +248,7 @@ export const AvatarCropModal: FC<AvatarCropModalProps> = ({
             <button
               type="button"
               onClick={() => updateZoom(zoom - 0.15)}
-              aria-label="Perkecil gambar"
+              aria-label={t('cropModal.zoomOutAria')}
               className="p-2 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             >
               <Minus className="w-3.5 h-3.5" aria-hidden="true" />
@@ -263,7 +266,7 @@ export const AvatarCropModal: FC<AvatarCropModalProps> = ({
             <button
               type="button"
               onClick={() => updateZoom(zoom + 0.15)}
-              aria-label="Perbesar gambar"
+              aria-label={t('cropModal.zoomInAria')}
               className="p-2 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             >
               <Plus className="w-3.5 h-3.5" aria-hidden="true" />
@@ -278,7 +281,7 @@ export const AvatarCropModal: FC<AvatarCropModalProps> = ({
             className="px-3.5 py-2 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-xs font-medium inline-flex items-center gap-1.5 hover:bg-[var(--bg-hover)]"
           >
             <RotateCw className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
-            <span>Putar 90°</span>
+            <span>{t('cropModal.rotateBtn')}</span>
           </button>
           <button
             type="button"
@@ -286,7 +289,7 @@ export const AvatarCropModal: FC<AvatarCropModalProps> = ({
             className="px-3.5 py-2 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-xs font-medium inline-flex items-center gap-1.5 hover:bg-[var(--bg-hover)]"
           >
             <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Reset</span>
+            <span>{t('cropModal.resetBtn')}</span>
           </button>
         </div>
 
@@ -302,7 +305,7 @@ export const AvatarCropModal: FC<AvatarCropModalProps> = ({
             onClick={onCancel}
             className="px-4 py-2.5 rounded-xl border border-[var(--border-subtle)] text-sm font-medium hover:bg-[var(--bg-hover)]"
           >
-            Batal
+            {t('common.cancel')}
           </button>
           <button
             type="button"
@@ -310,7 +313,7 @@ export const AvatarCropModal: FC<AvatarCropModalProps> = ({
             onClick={handleApply}
             className="flex-1 py-2.5 px-4 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-fg)] font-semibold text-sm hover:bg-[var(--accent-hover)] disabled:opacity-50"
           >
-            Terapkan Foto
+            {t('cropModal.applyBtn')}
           </button>
         </div>
       </div>

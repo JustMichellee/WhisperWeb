@@ -19,8 +19,10 @@ import type { UserPublicDto } from '@chat/shared';
 import { apiClient } from '../../services/api';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { useChatStore, type UiConversation } from '../../stores/useChatStore';
+import { useT } from '../../stores/useI18nStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { Avatar } from '../common/Avatar';
+import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import type { ChatFolderTab } from './AppRail';
 
 interface SidebarProps {
@@ -33,17 +35,14 @@ interface SidebarProps {
   onOpenSettings: () => void;
 }
 
-const FOLDER_META: Record<
-  ChatFolderTab,
-  { title: string; shortLabel: string; icon: typeof Inbox }
-> = {
-  all: { title: 'Semua Obrolan', shortLabel: 'Semua', icon: Inbox },
-  unread: { title: 'Belum Dibaca', shortLabel: 'Belum Dibaca', icon: MessageSquareDot },
-  direct: { title: 'Pesan Langsung', shortLabel: 'Direct', icon: MessageSquare },
-  group: { title: 'Ruang Grup', shortLabel: 'Grup', icon: Users },
+const FOLDER_ICONS: Record<ChatFolderTab, typeof Inbox> = {
+  all: Inbox,
+  unread: MessageSquareDot,
+  direct: MessageSquare,
+  group: Users,
 };
 
-function formatListTime(ts: number | null): string {
+function formatListTime(ts: number | null, dateLocale: string): string {
   if (!ts) return '';
   const date = new Date(ts);
   const now = new Date();
@@ -53,9 +52,9 @@ function formatListTime(ts: number | null): string {
     date.getFullYear() === now.getFullYear();
 
   if (isToday) {
-    return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' });
   }
-  return date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' });
+  return date.toLocaleDateString(dateLocale, { day: '2-digit', month: '2-digit' });
 }
 
 export const Sidebar: FC<SidebarProps> = ({
@@ -81,6 +80,7 @@ export const Sidebar: FC<SidebarProps> = ({
     resetSession,
   } = useChatStore();
   const { theme, toggleTheme } = useThemeStore();
+  const { t, dateLocale } = useT();
 
   const [query, setQuery] = useState('');
   const [userSearchResults, setUserSearchResults] = useState<UserPublicDto[]>([]);
@@ -108,11 +108,26 @@ export const Sidebar: FC<SidebarProps> = ({
 
   if (!user || !token || !privateKey) return null;
 
+  const folderMeta: Record<ChatFolderTab, { title: string; shortLabel: string; icon: typeof Inbox }> = {
+    all: { title: t('rail.folderAll'), shortLabel: t('rail.shortAll'), icon: FOLDER_ICONS.all },
+    unread: {
+      title: t('rail.folderUnread'),
+      shortLabel: t('rail.shortUnread'),
+      icon: FOLDER_ICONS.unread,
+    },
+    direct: {
+      title: t('rail.folderDirect'),
+      shortLabel: t('rail.shortDirect'),
+      icon: FOLDER_ICONS.direct,
+    },
+    group: { title: t('rail.folderGroup'), shortLabel: t('rail.shortGroup'), icon: FOLDER_ICONS.group },
+  };
+
   const getConversationMeta = (conv: UiConversation) => {
     if (conv.type === 'group') {
       return {
-        title: conv.name ?? 'Grup Tanpa Nama',
-        subtitle: `${conv.members.length} anggota`,
+        title: conv.name ?? t('common.unnamedGroup'),
+        subtitle: t('common.memberCount', { count: conv.members.length }),
         avatarUrl: conv.avatarUrl,
         isOnline: false,
         isGroup: true,
@@ -120,7 +135,7 @@ export const Sidebar: FC<SidebarProps> = ({
     }
     const peer = conv.members.find((m) => m.userId !== user.id);
     return {
-      title: peer?.displayName ?? 'Pengguna',
+      title: peer?.displayName ?? t('common.unknownUser'),
       subtitle: `@${peer?.username ?? ''}`,
       avatarUrl: peer?.avatarUrl ?? null,
       isOnline: peer?.isOnline ?? false,
@@ -155,11 +170,11 @@ export const Sidebar: FC<SidebarProps> = ({
     await logout();
   };
 
-  const activeFolder = FOLDER_META[filterTab];
+  const activeFolder = folderMeta[filterTab];
 
   return (
     <aside
-      aria-label="Daftar percakapan"
+      aria-label={t('sidebar.ariaLabel')}
       className="w-full md:w-[272px] lg:w-[324px] xl:w-[352px] shrink-0 h-full flex flex-col bg-[var(--bg-sidebar)] border-r border-[var(--border-subtle)] md:border md:rounded-2xl shadow-sm overflow-hidden"
     >
       <div className="min-h-14 px-3.5 py-2 border-b border-[var(--border-subtle)] flex items-center justify-between gap-2 shrink-0">
@@ -167,8 +182,8 @@ export const Sidebar: FC<SidebarProps> = ({
           <button
             type="button"
             onClick={onToggleRail}
-            aria-label={railCollapsed ? 'Perluas panel navigasi' : 'Ciutkan panel navigasi'}
-            title={railCollapsed ? 'Perluas navigasi' : 'Ciutkan navigasi'}
+            aria-label={railCollapsed ? t('sidebar.expandRail') : t('sidebar.collapseRail')}
+            title={railCollapsed ? t('sidebar.expandRail') : t('sidebar.collapseRail')}
             className="hidden md:inline-flex w-8 h-8 rounded-lg items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors shrink-0"
           >
             <PanelLeft className="w-4 h-4" aria-hidden="true" />
@@ -193,8 +208,8 @@ export const Sidebar: FC<SidebarProps> = ({
             type="button"
             onClick={() => void refreshConversations(token, user, privateKey)}
             disabled={conversationsLoading}
-            aria-label="Segarkan daftar obrolan"
-            title="Segarkan"
+            aria-label={t('sidebar.refresh')}
+            title={t('sidebar.refresh')}
             className="w-8 h-8 rounded-lg inline-flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
           >
             <RefreshCcw
@@ -203,12 +218,13 @@ export const Sidebar: FC<SidebarProps> = ({
             />
           </button>
 
-          <div className="flex md:hidden items-center gap-0.5">
+          <div className="flex md:hidden items-center gap-1">
+            <LanguageSwitcher compact={true} />
             <button
               type="button"
               onClick={onOpenNewGroup}
-              aria-label="Buat grup baru"
-              title="Buat Grup Baru"
+              aria-label={t('rail.createGroup')}
+              title={t('rail.createGroupTitle')}
               className="w-8 h-8 rounded-lg inline-flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
             >
               <Users className="w-4 h-4" aria-hidden="true" />
@@ -216,7 +232,7 @@ export const Sidebar: FC<SidebarProps> = ({
             <button
               type="button"
               onClick={toggleTheme}
-              aria-label={theme === 'dark' ? 'Ubah ke mode terang' : 'Ubah ke mode gelap'}
+              aria-label={theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
               className="w-8 h-8 rounded-lg inline-flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
             >
               {theme === 'dark' ? (
@@ -228,7 +244,7 @@ export const Sidebar: FC<SidebarProps> = ({
             <button
               type="button"
               onClick={onOpenSettings}
-              aria-label="Pengaturan profil dan Passkey"
+              aria-label={t('rail.settingsAria')}
               className="w-8 h-8 rounded-lg inline-flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
             >
               <Settings className="w-4 h-4" aria-hidden="true" />
@@ -236,7 +252,7 @@ export const Sidebar: FC<SidebarProps> = ({
             <button
               type="button"
               onClick={() => void handleLogout()}
-              aria-label="Keluar dari akun"
+              aria-label={t('rail.logoutAria')}
               className="w-8 h-8 rounded-lg inline-flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--status-danger)] hover:bg-[var(--bg-hover)]"
             >
               <LogOut className="w-4 h-4" aria-hidden="true" />
@@ -248,7 +264,7 @@ export const Sidebar: FC<SidebarProps> = ({
       <div className="px-3.5 pt-3 pb-2.5 space-y-2 shrink-0">
         <div className="relative flex items-center">
           <label htmlFor="sidebar-search" className="sr-only">
-            Cari percakapan atau username baru
+            {t('sidebar.searchAria')}
           </label>
           <Search
             className="w-3.5 h-3.5 absolute left-3 text-[var(--text-secondary)] pointer-events-none"
@@ -260,14 +276,14 @@ export const Sidebar: FC<SidebarProps> = ({
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Cari obrolan atau @username..."
+            placeholder={t('sidebar.searchPlaceholder')}
             className="w-full h-9 pl-9 pr-14 rounded-lg bg-[var(--bg-input)] text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] border border-[var(--border-subtle)] text-[13px]"
           />
           {query ? (
             <button
               type="button"
               onClick={() => setQuery('')}
-              aria-label="Bersihkan pencarian"
+              aria-label={t('sidebar.clearSearch')}
               className="absolute right-2 p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
             >
               <X className="w-3.5 h-3.5" aria-hidden="true" />
@@ -284,11 +300,11 @@ export const Sidebar: FC<SidebarProps> = ({
 
         <div
           role="tablist"
-          aria-label="Filter percakapan"
+          aria-label={t('sidebar.filterAria')}
           className="flex items-center gap-1.5"
         >
           {(['all', 'unread', 'direct', 'group'] as const).map((tabId) => {
-            const meta = FOLDER_META[tabId];
+            const meta = folderMeta[tabId];
             const Icon = meta.icon;
             const active = filterTab === tabId;
             return (
@@ -330,15 +346,15 @@ export const Sidebar: FC<SidebarProps> = ({
         {normalizedQuery.length >= 2 && (
           <div className="mb-3 pb-2 border-b border-[var(--border-subtle)]">
             <p className="px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
-              Orang baru (@username)
+              {t('sidebar.newPeopleHeader')}
             </p>
             {searchingUsers ? (
               <p className="px-2.5 py-2 text-xs text-[var(--text-secondary)]">
-                Mencari @{normalizedQuery}...
+                {t('sidebar.searchingUsers', { query: normalizedQuery })}
               </p>
             ) : userSearchResults.length === 0 ? (
               <p className="px-2.5 py-2 text-xs text-[var(--text-secondary)]">
-                Tidak ada pengguna dengan awalan @{normalizedQuery}.
+                {t('sidebar.noUserFound', { query: normalizedQuery })}
               </p>
             ) : (
               <ul className="space-y-0.5">
@@ -374,16 +390,16 @@ export const Sidebar: FC<SidebarProps> = ({
 
         {conversationsLoading && conversations.length === 0 ? (
           <div className="p-6 text-center space-y-1.5">
-            <p className="text-sm font-medium">Memuat obrolan...</p>
+            <p className="text-sm font-medium">{t('sidebar.loadingChats')}</p>
             <p className="text-xs text-[var(--text-secondary)]">
-              Menyiapkan riwayat pesan Anda.
+              {t('sidebar.loadingChatsDesc')}
             </p>
           </div>
         ) : conversationsError ? (
           <div role="alert" className="p-4 m-2 rounded-xl border border-[var(--status-danger)] space-y-2">
             <div className="flex items-center gap-2 text-sm font-semibold text-[var(--status-danger)]">
               <AlertCircle className="w-4 h-4" aria-hidden="true" />
-              <span>Gagal Memuat Obrolan</span>
+              <span>{t('sidebar.loadErrorTitle')}</span>
             </div>
             <p className="text-xs text-[var(--text-secondary)]">{conversationsError}</p>
             <button
@@ -391,23 +407,24 @@ export const Sidebar: FC<SidebarProps> = ({
               onClick={() => void refreshConversations(token, user, privateKey)}
               className="px-3.5 py-1.5 rounded-lg border border-[var(--border-subtle)] text-xs font-medium hover:bg-[var(--bg-hover)]"
             >
-              Coba Lagi
+              {t('common.retry')}
             </button>
           </div>
         ) : filteredConversations.length === 0 ? (
           <div className="p-6 text-center space-y-2">
             <p className="text-sm font-medium">
               {normalizedQuery
-                ? 'Tidak ada obrolan yang cocok'
+                ? t('sidebar.emptySearch')
                 : filterTab === 'unread'
-                  ? 'Semua pesan sudah dibaca'
+                  ? t('sidebar.emptyUnread')
                   : filterTab === 'group'
-                    ? 'Belum ada ruang grup'
-                    : 'Belum ada obrolan'}
+                    ? t('sidebar.emptyGroup')
+                    : t('sidebar.emptyAll')}
             </p>
             <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-              Ketik <span className="text-[var(--text-primary)]">@username</span> teman di kotak
-              cari atas untuk mulai ngobrol.
+              {t('sidebar.emptyHintPrefix')}{' '}
+              <span className="text-[var(--text-primary)]">@username</span>{' '}
+              {t('sidebar.emptyHintSuffix')}
             </p>
           </div>
         ) : (
@@ -418,8 +435,8 @@ export const Sidebar: FC<SidebarProps> = ({
               const typingIds = typingByConv[conv.id] ?? [];
               const previewText =
                 typingIds.length > 0
-                  ? 'sedang mengetik...'
-                  : conv.lastDecryptedText ?? 'Obrolan baru';
+                  ? t('sidebar.typing')
+                  : conv.lastDecryptedText ?? t('sidebar.newConversationPreview');
 
               return (
                 <li key={conv.id}>
@@ -461,7 +478,7 @@ export const Sidebar: FC<SidebarProps> = ({
                               : 'text-[var(--text-secondary)]'
                           }`}
                         >
-                          {formatListTime(conv.lastMessageAt ?? conv.createdAt)}
+                          {formatListTime(conv.lastMessageAt ?? conv.createdAt, dateLocale)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-2 mt-0.5">

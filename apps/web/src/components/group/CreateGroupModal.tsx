@@ -4,6 +4,7 @@ import type { UserPublicDto } from '@chat/shared';
 import { apiClient } from '../../services/api';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { useChatStore } from '../../stores/useChatStore';
+import { useT } from '../../stores/useI18nStore';
 import { useAvatarCropper } from '../../hooks/useAvatarCropper';
 import { Avatar } from '../common/Avatar';
 import { AvatarCropModal } from '../common/AvatarCropModal';
@@ -17,6 +18,7 @@ interface CreateGroupModalProps {
 export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) => {
   const { token, user, privateKey } = useAuthStore();
   const { createGroup } = useChatStore();
+  const { t } = useT();
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -73,7 +75,7 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) =
     e.preventDefault();
     if (!token || !user || !privateKey) return;
     if (selected.length === 0) {
-      setError('Pilih minimal 1 anggota lain untuk membuat grup.');
+      setError(t('createGroup.minMemberError'));
       return;
     }
 
@@ -88,7 +90,7 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) =
       setSelected([]);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal membuat grup terenkripsi.');
+      setError(err instanceof Error ? err.message : t('createGroup.createFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -96,10 +98,15 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) =
 
   return (
     <>
-      <Modal open={open} title="Buat Grup Terenkripsi Baru" onClose={onClose}>
+      <Modal open={open} title={t('createGroup.modalTitle')} onClose={onClose}>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-center gap-3.5">
-            <Avatar name={name || 'Grup'} avatarUrl={avatarUrl} isGroup={true} size="lg" />
+            <Avatar
+              name={name || t('common.groupFallback')}
+              avatarUrl={avatarUrl}
+              isGroup={true}
+              size="lg"
+            />
             <div className="flex items-center gap-2">
               <input
                 ref={iconInputRef}
@@ -110,7 +117,7 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) =
                   setError(null);
                   pickFileForCrop(e);
                 }}
-                aria-label="Pilih ikon grup"
+                aria-label={t('createGroup.selectIconAria')}
               />
               <button
                 type="button"
@@ -118,24 +125,24 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) =
                 className="px-3 py-1.5 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-xs font-medium flex items-center gap-1.5 hover:bg-[var(--bg-hover)]"
               >
                 <Camera className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
-                <span>{avatarUrl ? 'Ganti Ikon' : 'Pilih Ikon Grup'}</span>
+                <span>{avatarUrl ? t('createGroup.changeIcon') : t('createGroup.chooseIcon')}</span>
               </button>
               {avatarUrl && (
                 <>
                   <button
                     type="button"
                     onClick={() => openExistingForCrop(avatarUrl)}
-                    aria-label="Atur posisi dan ukuran ikon grup"
-                    title="Atur posisi ikon"
+                    aria-label={t('createGroup.adjustIconAria')}
+                    title={t('createGroup.adjustIconTitle')}
                     className="px-2.5 py-1.5 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-xs font-medium flex items-center gap-1 hover:bg-[var(--bg-hover)]"
                   >
                     <SlidersHorizontal className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
-                    <span>Atur</span>
+                    <span>{t('common.adjust')}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setAvatarUrl(null)}
-                    aria-label="Hapus ikon grup"
+                    aria-label={t('createGroup.removeIconAria')}
                     className="p-2 rounded-full border border-[var(--border-subtle)] text-[var(--status-danger)] hover:bg-[var(--bg-hover)]"
                   >
                     <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
@@ -146,7 +153,7 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) =
           </div>
         <div>
           <label htmlFor="group-name" className="block text-sm font-medium mb-1.5">
-            Nama Grup
+            {t('createGroup.nameLabel')}
           </label>
           <input
             id="group-name"
@@ -155,14 +162,14 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) =
             maxLength={64}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Misal: Nongkrong Akhir Pekan"
+            placeholder={t('createGroup.namePlaceholder')}
             className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-sm"
           />
         </div>
 
         <div>
           <label htmlFor="group-desc" className="block text-sm font-medium mb-1.5">
-            Deskripsi Grup (Opsional)
+            {t('createGroup.descLabel')}
           </label>
           <input
             id="group-desc"
@@ -170,14 +177,14 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) =
             maxLength={200}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Catatan singkat grup"
+            placeholder={t('createGroup.descPlaceholder')}
             className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-sm"
           />
         </div>
 
         <div>
           <label htmlFor="group-member-search" className="block text-sm font-medium mb-1.5">
-            Undang Teman (@username)
+            {t('createGroup.inviteLabel')}
           </label>
           <div className="relative">
             <Search
@@ -189,7 +196,7 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) =
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ketik minimal 2 huruf username..."
+              placeholder={t('createGroup.invitePlaceholder')}
               className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-sm"
             />
           </div>
@@ -206,7 +213,7 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) =
                 <button
                   type="button"
                   onClick={() => toggleMember(member)}
-                  aria-label={`Hapus ${member.displayName} dari daftar`}
+                  aria-label={t('createGroup.removeMemberAria', { name: member.displayName })}
                   className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 >
                   <X className="w-3.5 h-3.5" aria-hidden="true" />
@@ -218,13 +225,13 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) =
 
         <div className="max-h-44 overflow-y-auto rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-app)]">
           {searching ? (
-            <p className="p-3.5 text-xs text-[var(--text-secondary)]">Mencari pengguna...</p>
+            <p className="p-3.5 text-xs text-[var(--text-secondary)]">{t('createGroup.searching')}</p>
           ) : query.trim().length < 2 ? (
             <p className="p-3.5 text-xs text-[var(--text-secondary)]">
-              Cari username teman yang ingin diajak ke grup.
+              {t('createGroup.searchPrompt')}
             </p>
           ) : results.length === 0 ? (
-            <p className="p-3.5 text-xs text-[var(--text-secondary)]">Tidak ada pengguna ditemukan.</p>
+            <p className="p-3.5 text-xs text-[var(--text-secondary)]">{t('createGroup.noResults')}</p>
           ) : (
             <ul className="divide-y divide-[var(--border-subtle)]">
               {results.map((item) => {
@@ -272,13 +279,13 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({ open, onClose }) =
           className="w-full py-2.5 px-4 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-fg)] font-semibold text-sm flex items-center justify-center gap-2 hover:bg-[var(--accent-hover)] disabled:opacity-50"
         >
           <Users className="w-4 h-4" aria-hidden="true" />
-          <span>{submitting ? 'Membuat Kunci Grup...' : 'Buat Grup Terenkripsi'}</span>
+          <span>{submitting ? t('createGroup.creatingKeys') : t('createGroup.submitCreate')}</span>
         </button>
         </form>
       </Modal>
       <AvatarCropModal
         imageSrc={cropImageSrc}
-        title="Atur Ikon Grup"
+        title={t('createGroup.cropTitle')}
         onCancel={closeCrop}
         onConfirm={confirmCrop}
       />

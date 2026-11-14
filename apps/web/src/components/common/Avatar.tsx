@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { Users } from 'lucide-react';
+import { useT } from '../../stores/useI18nStore';
 
 interface AvatarProps {
   name: string;
@@ -41,6 +42,7 @@ export const Avatar: FC<AvatarProps> = ({
   isGroup = false,
   size = 'md',
 }) => {
+  const { t } = useT();
   const dim =
     size === 'sm' ? 'w-9 h-9 text-xs' : size === 'lg' ? 'w-14 h-14 text-lg' : 'w-10 h-10 text-sm';
   const dotSize = size === 'lg' ? 'w-3 h-3' : 'w-2.5 h-2.5';
@@ -51,7 +53,7 @@ export const Avatar: FC<AvatarProps> = ({
       {avatarUrl ? (
         <img
           src={avatarUrl}
-          alt={`Foto profil ${name}`}
+          alt={name}
           width={size === 'lg' ? 56 : size === 'sm' ? 36 : 40}
           height={size === 'lg' ? 56 : size === 'sm' ? 36 : 40}
           className="w-full h-full rounded-full object-cover"
@@ -71,8 +73,8 @@ export const Avatar: FC<AvatarProps> = ({
 
       {isOnline && !isGroup && (
         <span
-          title="Sedang online"
-          aria-label="Online"
+          title={t('chat.online')}
+          aria-label={t('chat.online')}
           className={`absolute bottom-0 right-0 ${dotSize} rounded-full bg-[var(--status-e2ee)] ring-2 ring-[var(--bg-sidebar)]`}
         />
       )}

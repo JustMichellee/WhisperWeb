@@ -26,6 +26,7 @@ import {
 import { MAX_ATTACHMENT_BYTES } from '@chat/shared';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { useChatStore, type UiConversation } from '../../stores/useChatStore';
+import { useT, type TranslationKey, type TranslationVars } from '../../stores/useI18nStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { Avatar } from '../common/Avatar';
 import { MessageBubble } from './MessageBubble';
@@ -47,28 +48,37 @@ interface ChatCanvasProps {
   onPreviewImage: (src: string, fileName: string) => void;
 }
 
-function formatDateHeading(ts: number): string {
+function formatDateHeading(
+  ts: number,
+  dateLocale: string,
+  t: (key: TranslationKey, vars?: TranslationVars) => string
+): string {
   const date = new Date(ts);
   const now = new Date();
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
 
-  if (date.toDateString() === now.toDateString()) return 'Hari Ini';
-  if (date.toDateString() === yesterday.toDateString()) return 'Kemarin';
-  return date.toLocaleDateString('id-ID', {
+  if (date.toDateString() === now.toDateString()) return t('chat.today');
+  if (date.toDateString() === yesterday.toDateString()) return t('chat.yesterday');
+  return date.toLocaleDateString(dateLocale, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
 }
 
-function formatLastSeen(ts: number | null): string {
-  if (!ts) return 'offline';
+function formatLastSeen(
+  ts: number | null,
+  dateLocale: string,
+  t: (key: TranslationKey, vars?: TranslationVars) => string
+): string {
+  if (!ts) return t('chat.offline');
   const date = new Date(ts);
-  return `terakhir dilihat ${date.toLocaleTimeString('id-ID', {
+  const time = date.toLocaleTimeString(dateLocale, {
     hour: '2-digit',
     minute: '2-digit',
-  })}`;
+  });
+  return t('chat.lastSeen', { time });
 }
 
 export const ChatCanvas: FC<ChatCanvasProps> = ({
@@ -87,6 +97,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
 }) => {
   const { user, token, privateKey } = useAuthStore();
   const { theme } = useThemeStore();
+  const { t, dateLocale } = useT();
   const {
     messagesByConv,
     messagesLoading,
@@ -140,16 +151,15 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
         <div className="max-w-md flex flex-col items-center text-center gap-4">
           <img
             src={theme === 'dark' ? '/empty-state.svg' : '/empty-state-light.svg'}
-            alt="Belum ada obrolan dipilih"
+            alt={t('chat.emptyAlt')}
             className="w-40 h-40 select-none"
           />
           <div className="space-y-1.5">
             <h1 className="text-lg font-semibold text-[var(--text-primary)]">
-              Ruang obrolan masih kosong
+              {t('chat.emptyTitle')}
             </h1>
             <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-              Pilih percakapan di daftar sebelah kiri atau mulai ruang baru yang terenkripsi
-              end-to-end.
+              {t('chat.emptySubtitle')}
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
@@ -159,7 +169,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
               className="h-9 px-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-sidebar)] hover:bg-[var(--bg-hover)] text-xs font-medium text-[var(--text-primary)] inline-flex items-center gap-2 transition-colors"
             >
               <Search className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
-              <span>Cari @username</span>
+              <span>{t('chat.emptyActionSearch')}</span>
             </button>
             <button
               type="button"
@@ -167,7 +177,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
               className="h-9 px-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-sidebar)] hover:bg-[var(--bg-hover)] text-xs font-medium text-[var(--text-primary)] inline-flex items-center gap-2 transition-colors"
             >
               <Users className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
-              <span>Buat Grup Baru</span>
+              <span>{t('chat.emptyActionGroup')}</span>
             </button>
           </div>
         </div>
@@ -180,21 +190,23 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
   const isBlocked = peer ? blockedUserIds.includes(peer.userId) : false;
   const typingIds = (typingByConv[conversation.id] ?? []).filter((id) => id !== user.id);
 
-  const headerTitle = isGroup ? conversation.name ?? 'Grup' : peer?.displayName ?? 'Kontak';
+  const headerTitle = isGroup
+    ? conversation.name ?? t('common.groupFallback')
+    : peer?.displayName ?? t('common.contactFallback');
   let statusLine = '';
   if (typingIds.length > 0) {
     if (isGroup) {
       const typer = conversation.members.find((m) => m.userId === typingIds[0]);
-      statusLine = `${typer?.displayName ?? 'Seseorang'} sedang mengetik...`;
+      statusLine = t('chat.typingGroup', { name: typer?.displayName ?? t('common.unknownUser') });
     } else {
-      statusLine = 'sedang mengetik...';
+      statusLine = t('chat.typingSingle');
     }
   } else if (isGroup) {
-    statusLine = `${conversation.members.length} anggota grup`;
+    statusLine = t('chat.groupMembers', { count: conversation.members.length });
   } else if (peer?.isOnline) {
-    statusLine = 'online';
+    statusLine = t('chat.online');
   } else {
-    statusLine = formatLastSeen(peer?.lastSeenAt ?? null);
+    statusLine = formatLastSeen(peer?.lastSeenAt ?? null, dateLocale, t);
   }
 
   const visibleMessages = inChatQuery.trim()
@@ -224,7 +236,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
     e.target.value = '';
     if (!file) return;
     if (file.size > MAX_ATTACHMENT_BYTES) {
-      setSendError('Ukuran berkas melebihi batas maksimum 25 MB.');
+      setSendError(t('chat.fileTooLarge'));
       return;
     }
     setSendError(null);
@@ -252,7 +264,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
       }
       setShowEmojiPicker(false);
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : 'Gagal mengirim pesan.');
+      setSendError(err instanceof Error ? err.message : t('chat.sendFailed'));
     } finally {
       setSending(false);
     }
@@ -277,7 +289,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
           <button
             type="button"
             onClick={onBackMobile}
-            aria-label="Kembali ke daftar chat"
+            aria-label={t('chat.backToList')}
             className="md:hidden w-9 h-9 rounded-lg text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center shrink-0"
           >
             <ArrowLeft className="w-4 h-4" aria-hidden="true" />
@@ -286,8 +298,8 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
           <button
             type="button"
             onClick={onCloseConversation}
-            aria-label="Tutup ruang obrolan"
-            title="Tutup obrolan"
+            aria-label={t('chat.closeThread')}
+            title={t('chat.closeThread')}
             className="hidden md:inline-flex w-8 h-8 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] items-center justify-center shrink-0 transition-colors"
           >
             <X className="w-4 h-4" aria-hidden="true" />
@@ -303,8 +315,8 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
               type="button"
               disabled={!hasPrevConversation}
               onClick={onPrevConversation}
-              aria-label="Obrolan sebelumnya"
-              title="Obrolan sebelumnya"
+              aria-label={t('chat.prevChat')}
+              title={t('chat.prevChat')}
               className="w-8 h-8 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] disabled:opacity-35 inline-flex items-center justify-center transition-colors"
             >
               <ChevronLeft className="w-4 h-4" aria-hidden="true" />
@@ -313,8 +325,8 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
               type="button"
               disabled={!hasNextConversation}
               onClick={onNextConversation}
-              aria-label="Obrolan berikutnya"
-              title="Obrolan berikutnya"
+              aria-label={t('chat.nextChat')}
+              title={t('chat.nextChat')}
               className="w-8 h-8 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] disabled:opacity-35 inline-flex items-center justify-center transition-colors"
             >
               <ChevronRight className="w-4 h-4" aria-hidden="true" />
@@ -351,20 +363,20 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
             <button
               type="button"
               onClick={onOpenSafetyModal}
-              aria-label="Lihat verifikasi keamanan obrolan"
-              title="Verifikasi Keamanan"
+              aria-label={t('chat.safetyAria')}
+              title={t('chat.safetyTitle')}
               className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--status-e2ee)] hover:bg-[var(--bg-hover)] transition-colors"
             >
               <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Terenkripsi</span>
+              <span>{t('chat.encryptedBadge')}</span>
             </button>
           )}
 
           <button
             type="button"
             onClick={() => setShowInChatSearch((prev) => !prev)}
-            aria-label="Cari pesan di obrolan ini"
-            title="Cari pesan"
+            aria-label={t('chat.searchInChatAria')}
+            title={t('chat.searchInChatTitle')}
             className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
               showInChatSearch
                 ? 'bg-[var(--bg-active)] text-[var(--text-primary)]'
@@ -377,8 +389,8 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
           <button
             type="button"
             onClick={onToggleInfo}
-            aria-label="Buka informasi percakapan"
-            title="Info ruang obrolan"
+            aria-label={t('chat.infoAria')}
+            title={t('chat.infoTitle')}
             className="w-8 h-8 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center transition-colors"
           >
             <Info className="w-4 h-4" aria-hidden="true" />
@@ -389,7 +401,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
       {showInChatSearch && (
         <div className="px-4 py-2 bg-[var(--bg-sidebar)] border-b border-[var(--border-subtle)] flex items-center gap-2 shrink-0">
           <label htmlFor="inchat-search" className="sr-only">
-            Cari kata kunci dalam pesan
+            {t('chat.inChatSearchAria')}
           </label>
           <input
             id="inchat-search"
@@ -397,7 +409,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
             autoFocus
             value={inChatQuery}
             onChange={(e) => setInChatQuery(e.target.value)}
-            placeholder="Cari kata di obrolan ini..."
+            placeholder={t('chat.inChatSearchPlaceholder')}
             className="flex-1 h-8 px-3 rounded-lg bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-xs"
           />
           <button
@@ -406,7 +418,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
               setInChatQuery('');
               setShowInChatSearch(false);
             }}
-            aria-label="Tutup pencarian pesan"
+            aria-label={t('chat.inChatSearchClose')}
             className="p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
           >
             <X className="w-4 h-4" aria-hidden="true" />
@@ -419,13 +431,13 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
           <div className="flex justify-center mb-5">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] text-xs text-[var(--text-secondary)] text-center max-w-md">
               <Lock className="w-3.5 h-3.5 shrink-0 text-[var(--status-e2ee)]" aria-hidden="true" />
-              <span>Obrolan dan kiriman file di ruang ini terlindungi enkripsi end-to-end.</span>
+              <span>{t('chat.e2eeBanner')}</span>
             </div>
           </div>
 
           {isLoadingMsgs && messages.length === 0 ? (
             <div className="py-10 text-center text-sm text-[var(--text-secondary)]">
-              Memuat obrolan...
+              {t('chat.loadingMessages')}
             </div>
           ) : msgsError ? (
             <div role="alert" className="p-4 rounded-2xl border border-[var(--status-danger)] text-center space-y-2">
@@ -435,14 +447,12 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
                 onClick={() => void selectConversation(conversation.id, token, user, privateKey)}
                 className="px-4 py-1.5 rounded-full bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] text-xs font-medium"
               >
-                Coba Lagi
+                {t('common.retry')}
               </button>
             </div>
           ) : visibleMessages.length === 0 ? (
             <div className="py-10 text-center text-sm text-[var(--text-secondary)]">
-              {inChatQuery
-                ? 'Tidak ditemukan pesan yang cocok dengan kata kunci tersebut.'
-                : 'Belum ada pesan. Sapa dulu di bawah.'}
+              {inChatQuery ? t('chat.emptySearchMessages') : t('chat.emptyMessages')}
             </div>
           ) : (
             visibleMessages.map((msg, idx) => {
@@ -463,7 +473,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
                   {showDateDivider && (
                     <div className="flex justify-center my-4">
                       <span className="px-3.5 py-1 rounded-full bg-[var(--bg-sidebar)] text-xs font-medium text-[var(--text-secondary)]">
-                        {formatDateHeading(msg.createdAt)}
+                        {formatDateHeading(msg.createdAt, dateLocale, t)}
                       </span>
                     </div>
                   )}
@@ -473,7 +483,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
                     isFirstInGroup={isFirstInGroup}
                     isLastInGroup={isLastInGroup}
                     showSenderName={isGroup}
-                    senderName={sender?.displayName ?? 'Pengguna'}
+                    senderName={sender?.displayName ?? t('common.unknownUser')}
                     otherMemberCount={Math.max(conversation.members.length - 1, 1)}
                     onReply={(m) => {
                       setReplyTarget(m);
@@ -497,18 +507,22 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
           <div className="px-4 py-2.5 border-b border-[var(--border-subtle)] flex items-center justify-between gap-3">
             <div className="min-w-0 pl-3 border-l-[3px] border-[var(--status-e2ee)]">
               <p className="text-xs font-semibold text-[var(--status-e2ee)]">
-                Membalas{' '}
-                {conversation.members.find((m) => m.userId === replyTarget.senderId)?.displayName ??
-                  'Pengguna'}
+                {t('chat.replyingTo', {
+                  name:
+                    conversation.members.find((m) => m.userId === replyTarget.senderId)
+                      ?.displayName ?? t('common.unknownUser'),
+                })}
               </p>
               <p className="text-xs text-[var(--text-secondary)] truncate">
-                {replyTarget.decrypted?.text || replyTarget.decrypted?.media?.fileName || 'Pesan'}
+                {replyTarget.decrypted?.text ||
+                  replyTarget.decrypted?.media?.fileName ||
+                  t('chat.replyFallbackLabel')}
               </p>
             </div>
             <button
               type="button"
               onClick={() => setReplyTarget(null)}
-              aria-label="Batalkan balasan"
+              aria-label={t('chat.cancelReply')}
               className="p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
             >
               <X className="w-4 h-4" aria-hidden="true" />
@@ -523,14 +537,14 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
               <div className="min-w-0">
                 <p className="text-sm font-medium truncate">{selectedFile.name}</p>
                 <p className="text-xs tabular-nums text-[var(--text-secondary)]">
-                  {(selectedFile.size / 1024).toFixed(1)} KB · Akan dienkripsi otomatis
+                  {(selectedFile.size / 1024).toFixed(1)} KB · {t('chat.attachmentNote')}
                 </p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setSelectedFile(null)}
-              aria-label="Hapus lampiran terpilih"
+              aria-label={t('chat.removeAttachment')}
               className="p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
             >
               <X className="w-4 h-4" aria-hidden="true" />
@@ -547,7 +561,11 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
               <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>{sendError}</span>
             </span>
-            <button type="button" onClick={() => setSendError(null)} aria-label="Tutup peringatan">
+            <button
+              type="button"
+              onClick={() => setSendError(null)}
+              aria-label={t('chat.dismissAlert')}
+            >
               <X className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
           </div>
@@ -555,7 +573,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
 
         {isBlocked ? (
           <div className="px-4 py-3.5 text-center text-sm text-[var(--text-secondary)]">
-            Anda memblokir kontak ini. Buka blokir di Info Kontak untuk kembali mengirim pesan.
+            {t('chat.blockedNotice')}
           </div>
         ) : (
           <form
@@ -583,8 +601,8 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
             <button
               type="button"
               onClick={() => setShowEmojiPicker((prev) => !prev)}
-              aria-label="Pilih emoji"
-              title="Emoji"
+              aria-label={t('chat.emojiAria')}
+              title={t('chat.emojiTitle')}
               className="min-w-[42px] min-h-[42px] p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center shrink-0"
             >
               <Smile className="w-5 h-5" aria-hidden="true" />
@@ -595,14 +613,14 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
               type="file"
               className="hidden"
               onChange={handleFilePicked}
-              aria-label="Unggah gambar atau dokumen"
+              aria-label={t('chat.attachAria')}
             />
 
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              aria-label="Lampirkan gambar atau dokumen"
-              title="Lampirkan gambar atau dokumen (maks. 25 MB)"
+              aria-label={t('chat.attachAria')}
+              title={t('chat.attachTitle')}
               className="min-w-[42px] min-h-[42px] p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center shrink-0"
             >
               <Paperclip className="w-5 h-5" aria-hidden="true" />
@@ -610,7 +628,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
 
             <div className="flex-1 min-w-0">
               <label htmlFor="chat-composer" className="sr-only">
-                Ketik pesan
+                {t('chat.composerLabel')}
               </label>
               <textarea
                 ref={textareaRef}
@@ -619,7 +637,11 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
                 value={text}
                 onChange={(e) => handleTextChange(e.target.value)}
                 onKeyDown={handleComposerKeyDown}
-                placeholder={selectedFile ? 'Tambahkan keterangan...' : 'Tulis pesan santai...'}
+                placeholder={
+                  selectedFile
+                    ? t('chat.composerCaptionPlaceholder')
+                    : t('chat.composerPlaceholder')
+                }
                 className="w-full px-2 py-2.5 bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] text-sm resize-none max-h-28 focus-visible:outline-none"
               />
             </div>
@@ -627,7 +649,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
             <button
               type="submit"
               disabled={sending || (!text.trim() && !selectedFile)}
-              aria-label="Kirim pesan"
+              aria-label={t('chat.sendAria')}
               className="min-w-[40px] min-h-[40px] w-[40px] h-[40px] rounded-xl bg-[var(--accent-primary)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)] disabled:opacity-45 flex items-center justify-center shrink-0 transition-colors"
             >
               <SendHorizontal className="w-4 h-4" aria-hidden="true" />

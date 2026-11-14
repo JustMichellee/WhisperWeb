@@ -1,6 +1,7 @@
 import { useEffect, useState, type FC } from 'react';
 import { Check, Copy, ShieldCheck } from 'lucide-react';
 import { computeSafetyNumber } from '../../crypto/keys';
+import { useT } from '../../stores/useI18nStore';
 import { Modal } from '../common/Modal';
 
 interface SafetyNumberModalProps {
@@ -20,6 +21,7 @@ export const SafetyNumberModal: FC<SafetyNumberModalProps> = ({
   peerName,
   peerUsername,
 }) => {
+  const { t } = useT();
   const [blocks, setBlocks] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
 
@@ -37,19 +39,18 @@ export const SafetyNumberModal: FC<SafetyNumberModalProps> = ({
   };
 
   return (
-    <Modal open={open} title="Verifikasi Keamanan End-to-End" onClose={onClose}>
+    <Modal open={open} title={t('safetyModal.title')} onClose={onClose}>
       <div className="space-y-4">
         <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-[var(--bg-app)] border border-[var(--border-subtle)]">
           <ShieldCheck className="w-5 h-5 shrink-0 text-[var(--status-e2ee)] mt-0.5" aria-hidden="true" />
           <p className="text-sm text-[var(--text-primary)]">
-            Percakapan dengan <span className="font-semibold">{peerName}</span> (@{peerUsername})
-            dienkripsi secara end-to-end antara perangkat kalian.
+            {t('safetyModal.summary', { name: peerName, username: peerUsername })}
           </p>
         </div>
 
         <div>
           <p className="text-xs font-medium text-[var(--text-secondary)] mb-2">
-            Safety Number (60 Digit)
+            {t('safetyModal.numberLabel')}
           </p>
           <div className="grid grid-cols-4 gap-2.5 p-4 rounded-2xl bg-[var(--bg-app)] border border-[var(--border-subtle)] font-mono-code tabular-nums text-sm text-center">
             {blocks.map((block, index) => (
@@ -61,8 +62,7 @@ export const SafetyNumberModal: FC<SafetyNumberModalProps> = ({
         </div>
 
         <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
-          Cocokkan 60 digit angka di atas dengan angka yang tampil di layar {peerName}. Jika sama
-          persis, kunci percakapan kalian terjamin aman.
+          {t('safetyModal.instruction', { name: peerName })}
         </p>
 
         <button
@@ -75,7 +75,7 @@ export const SafetyNumberModal: FC<SafetyNumberModalProps> = ({
           ) : (
             <Copy className="w-4 h-4" aria-hidden="true" />
           )}
-          <span>{copied ? 'Safety Number Tersalin' : 'Salin Safety Number'}</span>
+          <span>{copied ? t('safetyModal.copiedBtn') : t('safetyModal.copyBtn')}</span>
         </button>
       </div>
     </Modal>

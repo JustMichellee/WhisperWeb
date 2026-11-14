@@ -1,5 +1,6 @@
 import { useEffect, useRef, type FC, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { useT } from '../../stores/useI18nStore';
 
 interface ModalProps {
   open: boolean;
@@ -15,11 +16,13 @@ export const Modal: FC<ModalProps> = ({
   open,
   title,
   onClose,
-  closeLabel = 'Tutup dialog',
+  closeLabel,
   disableClose = false,
   maxWidthClass = 'max-w-md',
   children,
 }) => {
+  const { t } = useT();
+  const resolvedCloseLabel = closeLabel ?? t('common.close');
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -72,7 +75,7 @@ export const Modal: FC<ModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              aria-label={closeLabel}
+              aria-label={resolvedCloseLabel}
               className="p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
             >
               <X className="w-4 h-4" aria-hidden="true" />

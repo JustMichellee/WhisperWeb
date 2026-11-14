@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState, type FC, type FormEvent } from 'react';
 import { AlertCircle, Camera, CheckCircle2, KeyRound, Shield, SlidersHorizontal, Trash2 } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { useT } from '../../stores/useI18nStore';
 import { useAvatarCropper } from '../../hooks/useAvatarCropper';
 import { Avatar } from '../common/Avatar';
 import { AvatarCropModal } from '../common/AvatarCropModal';
+import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import { Modal } from '../common/Modal';
 
 interface ProfileSettingsModalProps {
@@ -13,6 +15,7 @@ interface ProfileSettingsModalProps {
 
 export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onClose }) => {
   const { user, passkeyCount, updateProfile, registerPasskey } = useAuthStore();
+  const { t } = useT();
 
   const [displayName, setDisplayName] = useState(user?.displayName ?? '');
   const [aboutBio, setAboutBio] = useState(user?.aboutBio ?? '');
@@ -55,11 +58,11 @@ export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onCl
         avatarUrl,
         hideOnlineStatus: hideOnline,
       });
-      setFeedback({ type: 'ok', text: 'Profil dan pengaturan privasi berhasil disimpan.' });
+      setFeedback({ type: 'ok', text: t('settings.profileSaved') });
     } catch (err) {
       setFeedback({
         type: 'err',
-        text: err instanceof Error ? err.message : 'Gagal memperbarui profil.',
+        text: err instanceof Error ? err.message : t('settings.profileError'),
       });
     } finally {
       setSaving(false);
@@ -71,11 +74,11 @@ export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onCl
     setPasskeyLoading(true);
     try {
       await registerPasskey();
-      setFeedback({ type: 'ok', text: 'Passkey perangkat berhasil ditautkan ke akun Anda.' });
+      setFeedback({ type: 'ok', text: t('settings.passkeyLinked') });
     } catch (err) {
       setFeedback({
         type: 'err',
-        text: err instanceof Error ? err.message : 'Pendaftaran Passkey dibatalkan atau tidak didukung.',
+        text: err instanceof Error ? err.message : t('settings.passkeyError'),
       });
     } finally {
       setPasskeyLoading(false);
@@ -84,7 +87,7 @@ export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onCl
 
   return (
     <>
-      <Modal open={open} title="Profil & Keamanan Akun" onClose={onClose}>
+      <Modal open={open} title={t('settings.modalTitle')} onClose={onClose}>
         <div className="space-y-5">
           <div className="flex items-center justify-between gap-3.5 pb-4 border-b border-[var(--border-subtle)]">
             <div className="flex items-center gap-3.5 min-w-0">
@@ -105,7 +108,7 @@ export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onCl
                   setFeedback(null);
                   pickFileForCrop(e);
                 }}
-                aria-label="Pilih foto profil"
+                aria-label={t('settings.selectAvatarAria')}
               />
               <button
                 type="button"
@@ -113,25 +116,25 @@ export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onCl
                 className="px-3 py-1.5 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-xs font-medium flex items-center gap-1.5 hover:bg-[var(--bg-hover)]"
               >
                 <Camera className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
-                <span>Ganti Foto</span>
+                <span>{t('settings.changePhoto')}</span>
               </button>
               {avatarUrl && (
                 <>
                   <button
                     type="button"
                     onClick={() => openExistingForCrop(avatarUrl)}
-                    aria-label="Atur posisi dan ukuran foto profil"
-                    title="Atur posisi foto"
+                    aria-label={t('settings.adjustPhotoAria')}
+                    title={t('settings.adjustPhotoTitle')}
                     className="px-2.5 py-1.5 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-xs font-medium flex items-center gap-1 hover:bg-[var(--bg-hover)]"
                   >
                     <SlidersHorizontal className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
-                    <span>Atur</span>
+                    <span>{t('common.adjust')}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setAvatarUrl(null)}
-                    aria-label="Hapus foto profil"
-                    title="Hapus foto"
+                    aria-label={t('settings.removePhotoAria')}
+                    title={t('settings.removePhotoAria')}
                     className="p-2 rounded-full border border-[var(--border-subtle)] text-[var(--status-danger)] hover:bg-[var(--bg-hover)]"
                   >
                     <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
@@ -144,7 +147,7 @@ export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onCl
         <form onSubmit={handleSave} className="space-y-4">
           <div>
             <label htmlFor="profile-displayname" className="block text-sm font-medium mb-1.5">
-              Nama Tampilan
+              {t('settings.displayNameLabel')}
             </label>
             <input
               id="profile-displayname"
@@ -159,7 +162,7 @@ export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onCl
 
           <div>
             <label htmlFor="profile-bio" className="block text-sm font-medium mb-1.5">
-              Tentang (Bio)
+              {t('settings.bioLabel')}
             </label>
             <input
               id="profile-bio"
@@ -167,16 +170,26 @@ export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onCl
               maxLength={140}
               value={aboutBio}
               onChange={(e) => setAboutBio(e.target.value)}
-              placeholder="Status singkat Anda"
+              placeholder={t('settings.bioPlaceholder')}
               className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-sm"
             />
           </div>
 
+          <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-[var(--bg-app)] border border-[var(--border-subtle)]">
+            <div className="min-w-0">
+              <span className="block text-sm font-medium">{t('settings.languageTitle')}</span>
+              <span className="block text-xs text-[var(--text-secondary)]">
+                {t('settings.languageDesc')}
+              </span>
+            </div>
+            <LanguageSwitcher />
+          </div>
+
           <label className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-[var(--bg-app)] border border-[var(--border-subtle)]">
             <div>
-              <span className="block text-sm font-medium">Sembunyikan Status Online & Last Seen</span>
+              <span className="block text-sm font-medium">{t('settings.hideOnlineTitle')}</span>
               <span className="block text-xs text-[var(--text-secondary)]">
-                Teman tidak akan melihat kapan Anda sedang aktif.
+                {t('settings.hideOnlineDesc')}
               </span>
             </div>
             <input
@@ -192,7 +205,7 @@ export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onCl
             disabled={saving}
             className="w-full py-2.5 px-4 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-fg)] font-semibold text-sm hover:bg-[var(--accent-hover)] disabled:opacity-60"
           >
-            {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+            {saving ? t('common.saving') : t('settings.saveChanges')}
           </button>
         </form>
 
@@ -200,10 +213,10 @@ export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onCl
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-[var(--status-e2ee)]" aria-hidden="true" />
-              <span className="text-sm font-semibold">Passkey (WebAuthn)</span>
+              <span className="text-sm font-semibold">{t('settings.passkeyTitle')}</span>
             </div>
             <span className="text-xs tabular-nums text-[var(--text-secondary)]">
-              {passkeyCount} perangkat terdaftar
+              {t('settings.passkeyCount', { count: passkeyCount })}
             </span>
           </div>
 
@@ -214,7 +227,7 @@ export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onCl
             className="w-full py-2.5 px-4 rounded-xl bg-[var(--bg-app)] border border-[var(--border-subtle)] text-sm font-medium flex items-center justify-center gap-2 hover:bg-[var(--bg-hover)] disabled:opacity-60"
           >
             <KeyRound className="w-4 h-4" aria-hidden="true" />
-            <span>{passkeyLoading ? 'Menghubungkan Perangkat...' : 'Tautkan Passkey Perangkat Ini'}</span>
+            <span>{passkeyLoading ? t('settings.connectingDevice') : t('settings.addPasskey')}</span>
           </button>
         </div>
 
@@ -239,7 +252,7 @@ export const ProfileSettingsModal: FC<ProfileSettingsModalProps> = ({ open, onCl
       </Modal>
       <AvatarCropModal
         imageSrc={cropImageSrc}
-        title="Atur Foto Profil"
+        title={t('settings.cropAvatarTitle')}
         onCancel={closeCrop}
         onConfirm={confirmCrop}
       />

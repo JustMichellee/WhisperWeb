@@ -18,6 +18,7 @@ import type { UserPublicDto } from '@chat/shared';
 import { apiClient } from '../../services/api';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { useChatStore, type UiConversation } from '../../stores/useChatStore';
+import { useT } from '../../stores/useI18nStore';
 import { useAvatarCropper } from '../../hooks/useAvatarCropper';
 import { Avatar } from '../common/Avatar';
 import { AvatarCropModal } from '../common/AvatarCropModal';
@@ -34,6 +35,7 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
   onOpenSafetyModal,
 }) => {
   const { user, token, privateKey } = useAuthStore();
+  const { t } = useT();
   const {
     messagesByConv,
     blockedUserIds,
@@ -95,7 +97,7 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
       );
       setEditingGroup(false);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Gagal memperbarui info grup.');
+      setActionError(err instanceof Error ? err.message : t('infoDrawer.updateGroupError'));
     } finally {
       setBusyAction(false);
     }
@@ -121,7 +123,7 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
       setMemberQuery('');
       setSearchResults([]);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Gagal menambahkan anggota.');
+      setActionError(err instanceof Error ? err.message : t('infoDrawer.addMemberError'));
     } finally {
       setBusyAction(false);
     }
@@ -136,7 +138,7 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
         onClose();
       }
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Gagal memperbarui keanggotaan grup.');
+      setActionError(err instanceof Error ? err.message : t('infoDrawer.updateGroupError'));
     } finally {
       setBusyAction(false);
     }
@@ -155,27 +157,31 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
   return (
     <>
       <aside
-        aria-label="Informasi percakapan"
+        aria-label={t('infoDrawer.ariaLabel')}
         className="fixed inset-y-0 right-0 z-30 w-full sm:w-[330px] lg:static lg:w-[330px] shrink-0 bg-[var(--bg-sidebar)] border-l border-[var(--border-subtle)] lg:border lg:rounded-2xl shadow-sm flex flex-col h-full overflow-hidden"
       >
       <div className="min-h-14 px-4 border-b border-[var(--border-subtle)] flex items-center gap-3 shrink-0">
         <button
           type="button"
           onClick={onClose}
-          aria-label="Tutup panel info"
+          aria-label={t('infoDrawer.closeAria')}
           className="p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
         >
           <X className="w-5 h-5" aria-hidden="true" />
         </button>
         <h2 className="text-base font-semibold">
-          {isGroup ? 'Info Grup' : 'Info Kontak'}
+          {isGroup ? t('infoDrawer.titleGroup') : t('infoDrawer.titleContact')}
         </h2>
       </div>
 
       <div className="flex-1 overflow-y-auto p-5 space-y-6">
         <div className="flex flex-col items-center text-center gap-2.5">
           <Avatar
-            name={isGroup ? conversation.name ?? 'Grup' : peer?.displayName ?? 'Kontak'}
+            name={
+              isGroup
+                ? conversation.name ?? t('common.groupFallback')
+                : peer?.displayName ?? t('common.contactFallback')
+            }
             avatarUrl={isGroup ? (editingGroup ? groupAvatar : conversation.avatarUrl) : peer?.avatarUrl}
             isGroup={isGroup}
             isOnline={peer?.isOnline}
@@ -186,7 +192,9 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
               {isGroup ? conversation.name : peer?.displayName}
             </h3>
             <p className="text-sm text-[var(--text-secondary)]">
-              {isGroup ? `${conversation.members.length} anggota` : `@${peer?.username}`}
+              {isGroup
+                ? t('common.memberCount', { count: conversation.members.length })
+                : `@${peer?.username}`}
             </p>
           </div>
           {(isGroup ? conversation.description : peer?.aboutBio) && !editingGroup && (
@@ -201,7 +209,7 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
               className="mt-1 px-3.5 py-1.5 rounded-full bg-[var(--bg-app)] border border-[var(--border-subtle)] text-xs font-medium inline-flex items-center gap-1.5 hover:bg-[var(--bg-hover)]"
             >
               <Pencil className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
-              <span>Edit Info Grup</span>
+              <span>{t('infoDrawer.editGroupBtn')}</span>
             </button>
           )}
         </div>
@@ -221,7 +229,7 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
                   setActionError(null);
                   pickFileForCrop(e);
                 }}
-                aria-label="Pilih ikon grup baru"
+                aria-label={t('infoDrawer.selectGroupIconAria')}
               />
               <button
                 type="button"
@@ -229,24 +237,24 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
                 className="px-3 py-1.5 rounded-full bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] text-xs font-medium inline-flex items-center gap-1.5 hover:bg-[var(--bg-hover)]"
               >
                 <Camera className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
-                <span>{groupAvatar ? 'Ganti Ikon' : 'Pasang Ikon'}</span>
+                <span>{groupAvatar ? t('infoDrawer.changeIcon') : t('infoDrawer.setIcon')}</span>
               </button>
               {groupAvatar && (
                 <>
                   <button
                     type="button"
                     onClick={() => openExistingForCrop(groupAvatar)}
-                    aria-label="Atur posisi dan ukuran ikon grup"
-                    title="Atur posisi ikon"
+                    aria-label={t('infoDrawer.adjustIconAria')}
+                    title={t('infoDrawer.adjustIconTitle')}
                     className="px-2.5 py-1.5 rounded-full bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] text-xs font-medium inline-flex items-center gap-1 hover:bg-[var(--bg-hover)]"
                   >
                     <SlidersHorizontal className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
-                    <span>Atur</span>
+                    <span>{t('common.adjust')}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setGroupAvatar(null)}
-                    aria-label="Hapus ikon grup"
+                    aria-label={t('infoDrawer.removeIconAria')}
                     className="p-1.5 rounded-full border border-[var(--border-subtle)] text-[var(--status-danger)] hover:bg-[var(--bg-hover)]"
                   >
                     <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
@@ -257,7 +265,7 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
 
             <div>
               <label htmlFor="edit-group-name" className="block text-xs font-medium mb-1">
-                Nama Grup
+                {t('infoDrawer.groupNameLabel')}
               </label>
               <input
                 id="edit-group-name"
@@ -272,7 +280,7 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
 
             <div>
               <label htmlFor="edit-group-desc" className="block text-xs font-medium mb-1">
-                Deskripsi Grup
+                {t('infoDrawer.groupDescLabel')}
               </label>
               <input
                 id="edit-group-desc"
@@ -280,7 +288,7 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
                 maxLength={200}
                 value={groupDesc}
                 onChange={(e) => setGroupDesc(e.target.value)}
-                placeholder="Catatan grup..."
+                placeholder={t('infoDrawer.groupDescPlaceholder')}
                 className="w-full px-3 py-2 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-xs"
               />
             </div>
@@ -296,14 +304,14 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
                 }}
                 className="px-3 py-2 rounded-xl border border-[var(--border-subtle)] text-xs font-medium hover:bg-[var(--bg-hover)]"
               >
-                Batal
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={busyAction || !groupName.trim()}
                 className="flex-1 py-2 px-3 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-fg)] text-xs font-semibold hover:bg-[var(--accent-hover)] disabled:opacity-50"
               >
-                {busyAction ? 'Menyimpan...' : 'Simpan Info'}
+                {busyAction ? t('common.saving') : t('infoDrawer.saveInfo')}
               </button>
             </div>
           </form>
@@ -312,12 +320,12 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
         <div className="p-4 rounded-2xl bg-[var(--bg-app)] border border-[var(--border-subtle)] space-y-2">
           <div className="flex items-center gap-2 text-sm font-semibold text-[var(--status-e2ee)]">
             <Lock className="w-4 h-4" aria-hidden="true" />
-            <span>Obrolan Terenkripsi</span>
+            <span>{t('infoDrawer.e2eeTitle')}</span>
           </div>
           <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
             {isGroup
-              ? `Pesan grup diamankan dengan kunci grup versi ${conversation.keyVersion} khusus untuk anggota di ruang ini.`
-              : 'Pesan dan kiriman file dienkripsi langsung di perangkat Anda.'}
+              ? t('infoDrawer.e2eeGroupDesc', { version: conversation.keyVersion })
+              : t('infoDrawer.e2eeDirectDesc')}
           </p>
           {!isGroup && peer && (
             <button
@@ -326,18 +334,18 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
               className="w-full mt-1 py-2 px-3 rounded-xl bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] text-xs font-medium flex items-center justify-center gap-2 hover:bg-[var(--bg-hover)]"
             >
               <Fingerprint className="w-4 h-4 text-[var(--status-e2ee)]" aria-hidden="true" />
-              <span>Lihat Safety Number</span>
+              <span>{t('infoDrawer.viewSafetyNumber')}</span>
             </button>
           )}
         </div>
 
         <div>
           <h4 className="text-xs font-semibold text-[var(--text-secondary)] mb-2.5">
-            File & Media Terkirim ({sharedMedia.length})
+            {t('infoDrawer.sharedMediaTitle', { count: sharedMedia.length })}
           </h4>
           {sharedMedia.length === 0 ? (
             <p className="text-xs text-[var(--text-secondary)]">
-              Belum ada gambar atau dokumen di obrolan ini.
+              {t('infoDrawer.sharedMediaEmpty')}
             </p>
           ) : (
             <ul className="space-y-1.5 max-h-40 overflow-y-auto">
@@ -357,13 +365,13 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
         {isGroup && (
           <div className="space-y-3">
             <h4 className="text-xs font-semibold text-[var(--text-secondary)]">
-              Anggota ({conversation.members.length})
+              {t('infoDrawer.membersTitle', { count: conversation.members.length })}
             </h4>
 
             {isAdmin && (
               <div className="space-y-2">
                 <label htmlFor="drawer-add-member" className="sr-only">
-                  Undang anggota baru dengan username
+                  {t('infoDrawer.inviteAria')}
                 </label>
                 <div className="relative">
                   <Search
@@ -375,7 +383,7 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
                     type="text"
                     value={memberQuery}
                     onChange={(e) => void handleSearchUser(e.target.value)}
-                    placeholder="Undang @username ke grup..."
+                    placeholder={t('infoDrawer.invitePlaceholder')}
                     className="w-full pl-9 pr-3.5 py-2 rounded-full bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-xs"
                   />
                 </div>
@@ -416,10 +424,12 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
                     />
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">
-                        {member.userId === user.id ? `${member.displayName} (Anda)` : member.displayName}
+                        {member.userId === user.id
+                          ? `${member.displayName}${t('common.youSuffix')}`
+                          : member.displayName}
                       </p>
                       <p className="text-xs text-[var(--text-secondary)] truncate">
-                        @{member.username} {member.role === 'admin' ? '· Admin' : ''}
+                        @{member.username} {member.role === 'admin' ? t('common.adminBadge') : ''}
                       </p>
                     </div>
                   </div>
@@ -429,8 +439,8 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
                       type="button"
                       disabled={busyAction}
                       onClick={() => void handleRemoveOrLeave(member.userId)}
-                      aria-label={`Keluarkan ${member.displayName} dan rotasi kunci grup`}
-                      title="Keluarkan & rotasi kunci grup"
+                      aria-label={t('infoDrawer.removeMemberAria', { name: member.displayName })}
+                      title={t('infoDrawer.removeMemberTitle')}
                       className="p-2 rounded-full text-[var(--status-danger)] hover:bg-[var(--bg-hover)]"
                     >
                       <UserMinus className="w-4 h-4" aria-hidden="true" />
@@ -457,7 +467,7 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
               className="w-full py-2.5 px-4 rounded-xl border border-[var(--status-danger)] text-[var(--status-danger)] text-sm font-medium flex items-center justify-center gap-2 hover:bg-[var(--bg-hover)]"
             >
               <LogOut className="w-4 h-4" aria-hidden="true" />
-              <span>Keluar dari Grup</span>
+              <span>{t('infoDrawer.leaveGroup')}</span>
             </button>
           ) : (
             peer && (
@@ -468,7 +478,9 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
                 className="w-full py-2.5 px-4 rounded-xl border border-[var(--status-danger)] text-[var(--status-danger)] text-sm font-medium flex items-center justify-center gap-2 hover:bg-[var(--bg-hover)]"
               >
                 <Ban className="w-4 h-4" aria-hidden="true" />
-                <span>{isBlocked ? 'Buka Blokir Kontak' : 'Blokir Kontak'}</span>
+                <span>
+                  {isBlocked ? t('infoDrawer.unblockContact') : t('infoDrawer.blockContact')}
+                </span>
               </button>
             )
           )}
@@ -477,7 +489,7 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
       </aside>
       <AvatarCropModal
         imageSrc={cropImageSrc}
-        title="Atur Ikon Grup"
+        title={t('infoDrawer.cropGroupIconTitle')}
         onCancel={closeCrop}
         onConfirm={confirmCrop}
       />

@@ -1,7 +1,9 @@
 import { useState, type FC, type FormEvent } from 'react';
 import { AlertCircle, KeyRound, Lock, MessageCircle, Moon, Sun } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { useT } from '../../stores/useI18nStore';
 import { useThemeStore } from '../../stores/useThemeStore';
+import { LanguageSwitcher } from '../common/LanguageSwitcher';
 
 type AuthTab = 'login' | 'register' | 'recover';
 
@@ -17,6 +19,7 @@ export const AuthScreen: FC = () => {
     logout,
   } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
+  const { t } = useT();
 
   const [tab, setTab] = useState<AuthTab>('login');
   const [username, setUsername] = useState('');
@@ -40,7 +43,7 @@ export const AuthScreen: FC = () => {
         await recoverAccount({ username, recoveryCode, newPassword: password });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat memproses akun.');
+      setError(err instanceof Error ? err.message : t('auth.genericError'));
     } finally {
       setLoading(false);
     }
@@ -52,7 +55,7 @@ export const AuthScreen: FC = () => {
     try {
       await loginWithPasskey(username || undefined);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Autentikasi Passkey dibatalkan atau gagal.');
+      setError(err instanceof Error ? err.message : t('auth.passkeyError'));
     } finally {
       setLoading(false);
     }
@@ -70,9 +73,7 @@ export const AuthScreen: FC = () => {
       }
     } catch {
       setError(
-        unlockMode === 'password'
-          ? 'Password tidak cocok untuk membuka kunci enkripsi Anda.'
-          : 'Recovery Key tidak cocok untuk membuka kunci enkripsi Anda.'
+        unlockMode === 'password' ? t('auth.unlockPasswordError') : t('auth.unlockRecoveryError')
       );
     } finally {
       setLoading(false);
@@ -81,14 +82,17 @@ export const AuthScreen: FC = () => {
 
   if (pendingVaultUnlock) {
     return (
-      <main className="min-h-dvh flex items-center justify-center p-4 bg-[var(--bg-app)]">
+      <main className="min-h-dvh flex items-center justify-center p-4 bg-[var(--bg-app)] relative">
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+          <LanguageSwitcher />
+        </div>
         <section className="w-full max-w-md rounded-3xl bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] p-7 shadow-xl space-y-5">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-full bg-[var(--bg-app)] flex items-center justify-center shrink-0">
               <Lock className="w-5 h-5 text-[var(--status-e2ee)]" aria-hidden="true" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold">Buka Obrolan</h1>
+              <h1 className="text-lg font-semibold">{t('auth.unlockTitle')}</h1>
               <p className="text-sm text-[var(--text-secondary)]">
                 @{pendingVaultUnlock.user.username}
               </p>
@@ -96,13 +100,12 @@ export const AuthScreen: FC = () => {
           </div>
 
           <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-            Passkey terverifikasi. Masukkan password atau Recovery Key untuk membuka kunci obrolan
-            di perangkat ini.
+            {t('auth.unlockDesc')}
           </p>
 
           <div
             role="tablist"
-            aria-label="Metode buka kunci"
+            aria-label={t('auth.unlockAriaLabel')}
             className="grid grid-cols-2 gap-1 p-1 rounded-full bg-[var(--bg-app)]"
           >
             <button
@@ -119,7 +122,7 @@ export const AuthScreen: FC = () => {
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
-              Password
+              {t('auth.unlockPasswordTab')}
             </button>
             <button
               type="button"
@@ -135,7 +138,7 @@ export const AuthScreen: FC = () => {
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
-              Recovery Key
+              {t('auth.unlockRecoveryTab')}
             </button>
           </div>
 
@@ -143,7 +146,7 @@ export const AuthScreen: FC = () => {
             {unlockMode === 'password' ? (
               <div>
                 <label htmlFor="unlock-password" className="block text-sm font-medium mb-1.5">
-                  Password Akun
+                  {t('auth.accountPasswordLabel')}
                 </label>
                 <input
                   id="unlock-password"
@@ -151,14 +154,14 @@ export const AuthScreen: FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Masukkan password Anda"
+                  placeholder={t('auth.accountPasswordPlaceholder')}
                   className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-sm"
                 />
               </div>
             ) : (
               <div>
                 <label htmlFor="unlock-recovery" className="block text-sm font-medium mb-1.5">
-                  Recovery Key (24 Karakter)
+                  {t('auth.recoveryKeyLabel')}
                 </label>
                 <input
                   id="unlock-recovery"
@@ -166,7 +169,7 @@ export const AuthScreen: FC = () => {
                   required
                   value={recoveryCode}
                   onChange={(e) => setRecoveryCode(e.target.value)}
-                  placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
+                  placeholder={t('auth.recoveryKeyPlaceholder')}
                   className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] font-mono-code text-sm"
                 />
               </div>
@@ -188,14 +191,14 @@ export const AuthScreen: FC = () => {
                 onClick={() => void logout()}
                 className="px-4 py-2.5 rounded-xl border border-[var(--border-subtle)] text-[var(--text-primary)] text-sm font-medium hover:bg-[var(--bg-hover)]"
               >
-                Batal
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={loading}
                 className="flex-1 py-2.5 px-4 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-fg)] font-semibold text-sm hover:bg-[var(--accent-hover)] disabled:opacity-60"
               >
-                {loading ? 'Membuka...' : 'Buka & Lanjut'}
+                {loading ? t('auth.unlockSubmitLoading') : t('auth.unlockSubmit')}
               </button>
             </div>
           </form>
@@ -206,24 +209,27 @@ export const AuthScreen: FC = () => {
 
   return (
     <main className="min-h-dvh flex flex-col items-center justify-center p-4 sm:p-6 bg-[var(--bg-app)] text-[var(--text-primary)] relative">
-      <button
-        type="button"
-        onClick={toggleTheme}
-        aria-label={theme === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
-        className="absolute top-4 right-4 sm:top-6 sm:right-6 px-3.5 py-2 rounded-full bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] text-xs font-medium flex items-center gap-2 text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
-      >
-        {theme === 'dark' ? (
-          <>
-            <Sun className="w-4 h-4 text-[var(--status-e2ee)]" aria-hidden="true" />
-            <span>Mode Terang</span>
-          </>
-        ) : (
-          <>
-            <Moon className="w-4 h-4 text-[var(--status-e2ee)]" aria-hidden="true" />
-            <span>Mode Gelap</span>
-          </>
-        )}
-      </button>
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-2">
+        <LanguageSwitcher />
+        <button
+          type="button"
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
+          className="px-3.5 py-2 rounded-full bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] text-xs font-medium flex items-center gap-2 text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
+        >
+          {theme === 'dark' ? (
+            <>
+              <Sun className="w-4 h-4 text-[var(--status-e2ee)]" aria-hidden="true" />
+              <span className="hidden sm:inline">{t('common.lightMode')}</span>
+            </>
+          ) : (
+            <>
+              <Moon className="w-4 h-4 text-[var(--status-e2ee)]" aria-hidden="true" />
+              <span className="hidden sm:inline">{t('common.darkMode')}</span>
+            </>
+          )}
+        </button>
+      </div>
 
       <section className="w-full max-w-[430px] md:max-w-4xl rounded-2xl bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] shadow-xl overflow-hidden grid md:grid-cols-[1fr_410px]">
         <div className="hidden md:flex flex-col justify-between p-8 bg-[var(--bg-canvas)] border-r border-[var(--border-subtle)]">
@@ -235,11 +241,10 @@ export const AuthScreen: FC = () => {
 
             <div className="space-y-3">
               <h1 className="text-3xl font-bold tracking-tight leading-snug text-[var(--text-primary)]">
-                Ngobrol santai tanpa perlu bagi nomor HP.
+                {t('auth.heroTitle')}
               </h1>
               <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-                Suasana ringan buat chat berdua atau grup kecil. Semua pesan dan lampiran dienkripsi
-                langsung di perangkat sebelum dikirim.
+                {t('auth.heroSubtitle')}
               </p>
             </div>
           </div>
@@ -247,11 +252,11 @@ export const AuthScreen: FC = () => {
           <div className="space-y-2.5 pt-6 border-t border-[var(--border-subtle)] text-xs text-[var(--text-secondary)]">
             <div className="flex items-center gap-2">
               <Lock className="w-3.5 h-3.5 text-[var(--status-e2ee)] shrink-0" aria-hidden="true" />
-              <span>Enkripsi end-to-end otomatis per perangkat</span>
+              <span>{t('auth.heroBulletE2ee')}</span>
             </div>
             <div className="flex items-center gap-2">
               <KeyRound className="w-3.5 h-3.5 text-[var(--status-e2ee)] shrink-0" aria-hidden="true" />
-              <span>Masuk cepat dengan Passkey atau kata sandi</span>
+              <span>{t('auth.heroBulletPasskey')}</span>
             </div>
           </div>
         </div>
@@ -263,28 +268,32 @@ export const AuthScreen: FC = () => {
             </div>
             <div>
               <h2 className="text-xl md:text-2xl font-bold tracking-tight">
-                {tab === 'login' ? 'Masuk ke Ruang Chat' : tab === 'register' ? 'Buat Akun Baru' : 'Pulihkan Akun'}
+                {tab === 'login'
+                  ? t('auth.titleLogin')
+                  : tab === 'register'
+                    ? t('auth.titleRegister')
+                    : t('auth.titleRecover')}
               </h2>
               <p className="text-sm text-[var(--text-secondary)] mt-1">
                 {tab === 'login'
-                  ? 'Lanjutkan obrolan Anda dengan tenang.'
+                  ? t('auth.subtitleLogin')
                   : tab === 'register'
-                    ? 'Cukup pakai username, tanpa nomor HP.'
-                    : 'Masukkan Recovery Key 24 karakter Anda.'}
+                    ? t('auth.subtitleRegister')
+                    : t('auth.subtitleRecover')}
               </p>
             </div>
           </div>
 
           <div
             role="tablist"
-            aria-label="Pilihan autentikasi"
+            aria-label={t('auth.authTabAriaLabel')}
             className="grid grid-cols-3 gap-1 p-1 rounded-full bg-[var(--bg-canvas)] border border-[var(--border-subtle)]"
           >
             {(
               [
-                { id: 'login', label: 'Masuk' },
-                { id: 'register', label: 'Daftar' },
-                { id: 'recover', label: 'Pulihkan' },
+                { id: 'login', label: t('auth.tabLogin') },
+                { id: 'register', label: t('auth.tabRegister') },
+                { id: 'recover', label: t('auth.tabRecover') },
               ] as const
             ).map((item) => {
               const selected = tab === item.id;
@@ -313,7 +322,7 @@ export const AuthScreen: FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="auth-username" className="block text-sm font-medium mb-1.5">
-                Username
+                {t('auth.usernameLabel')}
               </label>
               <input
                 id="auth-username"
@@ -324,12 +333,12 @@ export const AuthScreen: FC = () => {
                 maxLength={24}
                 value={username}
                 onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                placeholder="misal: budi_santoso"
+                placeholder={t('auth.usernamePlaceholder')}
                 className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-sm"
               />
               {tab === 'register' && (
                 <p className="mt-1.5 text-xs text-[var(--text-secondary)]">
-                  Pakai huruf kecil, angka, atau garis bawah (3 sampai 24 karakter).
+                  {t('auth.usernameHint')}
                 </p>
               )}
             </div>
@@ -337,7 +346,7 @@ export const AuthScreen: FC = () => {
             {tab === 'register' && (
               <div>
                 <label htmlFor="auth-displayname" className="block text-sm font-medium mb-1.5">
-                  Nama Panggilan
+                  {t('auth.displayNameLabel')}
                 </label>
                 <input
                   id="auth-displayname"
@@ -346,7 +355,7 @@ export const AuthScreen: FC = () => {
                   maxLength={48}
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Nama yang tampil di obrolan"
+                  placeholder={t('auth.displayNamePlaceholder')}
                   className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-sm"
                 />
               </div>
@@ -355,7 +364,7 @@ export const AuthScreen: FC = () => {
             {tab === 'recover' && (
               <div>
                 <label htmlFor="auth-recovery" className="block text-sm font-medium mb-1.5">
-                  Recovery Key (24 Karakter)
+                  {t('auth.recoveryKeyLabel')}
                 </label>
                 <input
                   id="auth-recovery"
@@ -363,7 +372,7 @@ export const AuthScreen: FC = () => {
                   required
                   value={recoveryCode}
                   onChange={(e) => setRecoveryCode(e.target.value)}
-                  placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
+                  placeholder={t('auth.recoveryKeyPlaceholder')}
                   className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] font-mono-code text-sm"
                 />
               </div>
@@ -371,7 +380,7 @@ export const AuthScreen: FC = () => {
 
             <div>
               <label htmlFor="auth-password" className="block text-sm font-medium mb-1.5">
-                {tab === 'recover' ? 'Password Baru' : 'Password'}
+                {tab === 'recover' ? t('auth.newPasswordLabel') : t('auth.passwordLabel')}
               </label>
               <input
                 id="auth-password"
@@ -381,7 +390,7 @@ export const AuthScreen: FC = () => {
                 minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Minimal 8 karakter"
+                placeholder={t('auth.passwordPlaceholder')}
                 className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-sm"
               />
             </div>
@@ -402,12 +411,12 @@ export const AuthScreen: FC = () => {
               className="w-full py-2.5 px-4 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-fg)] font-semibold text-sm hover:bg-[var(--accent-hover)] disabled:opacity-60"
             >
               {loading
-                ? 'Menyiapkan obrolan...'
+                ? t('auth.submitLoading')
                 : tab === 'login'
-                  ? 'Masuk'
+                  ? t('auth.submitLogin')
                   : tab === 'register'
-                    ? 'Daftar & Mulai Chat'
-                    : 'Pulihkan Akun'}
+                    ? t('auth.submitRegister')
+                    : t('auth.submitRecover')}
             </button>
 
             {tab === 'login' && (
@@ -418,14 +427,14 @@ export const AuthScreen: FC = () => {
                 className="w-full py-2.5 px-4 rounded-xl bg-transparent text-[var(--text-primary)] border border-[var(--border-subtle)] font-medium text-sm flex items-center justify-center gap-2 hover:bg-[var(--bg-hover)] disabled:opacity-60"
               >
                 <KeyRound className="w-4 h-4" aria-hidden="true" />
-                <span>Masuk pakai Passkey</span>
+                <span>{t('auth.passkeyLogin')}</span>
               </button>
             )}
           </form>
 
           <div className="flex md:hidden items-center justify-center gap-1.5 text-xs text-[var(--text-secondary)] pt-1">
             <Lock className="w-3.5 h-3.5 text-[var(--status-e2ee)] shrink-0" aria-hidden="true" />
-            <span>Pesan terkunci otomatis di perangkat Anda.</span>
+            <span>{t('auth.heroMobileNote')}</span>
           </div>
         </div>
       </section>

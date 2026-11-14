@@ -1,5 +1,6 @@
 import { useEffect, type FC } from 'react';
 import { Download, X } from 'lucide-react';
+import { useT } from '../../stores/useI18nStore';
 
 interface ImageLightboxProps {
   src: string | null;
@@ -8,6 +9,8 @@ interface ImageLightboxProps {
 }
 
 export const ImageLightbox: FC<ImageLightboxProps> = ({ src, fileName, onClose }) => {
+  const { t } = useT();
+
   useEffect(() => {
     if (!src) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -26,7 +29,7 @@ export const ImageLightbox: FC<ImageLightboxProps> = ({ src, fileName, onClose }
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={`Pratinjau gambar ${fileName}`}
+      aria-label={t('lightbox.dialogAria', { fileName })}
       onClick={onClose}
       className="fixed inset-0 z-50 bg-black/90 flex flex-col"
     >
@@ -39,16 +42,16 @@ export const ImageLightbox: FC<ImageLightboxProps> = ({ src, fileName, onClose }
           <a
             href={src}
             download={fileName}
-            aria-label={`Unduh ${fileName}`}
+            aria-label={t('lightbox.downloadAria', { fileName })}
             className="p-2.5 rounded-lg hover:bg-white/15 inline-flex items-center gap-1.5 text-sm"
           >
             <Download className="w-5 h-5" aria-hidden="true" />
-            <span>Unduh</span>
+            <span>{t('common.download')}</span>
           </a>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Tutup pratinjau gambar"
+            aria-label={t('lightbox.closeAria')}
             className="p-2.5 rounded-lg hover:bg-white/15"
           >
             <X className="w-5 h-5" aria-hidden="true" />

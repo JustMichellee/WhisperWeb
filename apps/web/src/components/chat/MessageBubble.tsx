@@ -14,6 +14,7 @@ import { decryptBinaryFile } from '../../crypto/cipher';
 import { apiClient } from '../../services/api';
 import { useAuthStore } from '../../stores/useAuthStore';
 import type { UiMessage } from '../../stores/useChatStore';
+import { useT } from '../../stores/useI18nStore';
 import { formatMessageText } from '../../utils/formatMessageText';
 import { Bubble, BubbleContent } from '../ui/bubble';
 import {
@@ -31,8 +32,8 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatTime(ts: number): string {
-  return new Date(ts).toLocaleTimeString('id-ID', {
+function formatTime(ts: number, dateLocale: string): string {
+  return new Date(ts).toLocaleTimeString(dateLocale, {
     hour: '2-digit',
     minute: '2-digit',
   });
@@ -68,6 +69,7 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
   onPreviewImage,
 }) => {
   const { token, user } = useAuthStore();
+  const { t, dateLocale } = useT();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [mediaLoading, setMediaLoading] = useState(false);
   const [mediaError, setMediaError] = useState<string | null>(null);
@@ -98,7 +100,7 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
         setImageUrl(createdUrl);
       })
       .catch(() => {
-        if (active) setMediaError('Gagal mendekripsi gambar.');
+        if (active) setMediaError(t('message.decryptImageFailed'));
       })
       .finally(() => {
         if (active) setMediaLoading(false);
@@ -127,14 +129,14 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      setMediaError('Gagal mengunduh atau mendekripsi berkas.');
+      setMediaError(t('message.downloadDocFailed'));
     } finally {
       setDownloadingDoc(false);
     }
   };
 
   const renderReceiptFooter = () => {
-    const timeText = formatTime(message.createdAt);
+    const timeText = formatTime(message.createdAt, dateLocale);
 
     if (!isMine) {
       if (!isLastInGroup || isFirstInGroup) return null;
@@ -161,7 +163,7 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
       return (
         <MessageFooter className="gap-1">
           <Clock className="w-3 h-3 shrink-0" aria-hidden="true" />
-          <span>Mengirim</span>
+          <span>{t('message.statusSending')}</span>
           <span className="tabular-nums">{timeText}</span>
         </MessageFooter>
       );
@@ -178,7 +180,7 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
       return (
         <MessageFooter className="gap-1 text-[var(--read-receipt)]">
           <CheckCheck className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-          <span className="font-medium">Dibaca</span>
+          <span className="font-medium">{t('message.statusRead')}</span>
           <span className="tabular-nums">{timeText}</span>
         </MessageFooter>
       );
@@ -187,7 +189,7 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
       return (
         <MessageFooter className="gap-1">
           <CheckCheck className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-          <span>Diterima</span>
+          <span>{t('message.statusDelivered')}</span>
           <span className="tabular-nums">{timeText}</span>
         </MessageFooter>
       );
@@ -195,7 +197,7 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
     return (
       <MessageFooter className="gap-1">
         <Check className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-        <span>Terkirim</span>
+        <span>{t('message.statusSent')}</span>
         <span className="tabular-nums">{timeText}</span>
       </MessageFooter>
     );
@@ -224,7 +226,7 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
       : 'rounded-bl-[6px]'
     : '';
 
-  const exactTimeLabel = formatTime(message.createdAt);
+  const exactTimeLabel = formatTime(message.createdAt, dateLocale);
 
   return (
     <Message
@@ -260,11 +262,11 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
           >
             <BubbleContent>
               {message.isDeleted ? (
-            <p className={`text-sm italic ${metaColorClass}`}>Pesan ini telah dihapus</p>
+            <p className={`text-sm italic ${metaColorClass}`}>{t('message.deleted')}</p>
           ) : message.decryptError || !message.decrypted ? (
             <div className="flex items-center gap-2 text-sm italic text-[var(--status-warning)]">
               <Lock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-              <span>Pesan terenkripsi tidak dapat didekripsi dengan kunci saat ini.</span>
+              <span>{t('message.decryptError')}</span>
             </div>
           ) : (
             <div className="space-y-1.5">
@@ -290,7 +292,7 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
                   {mediaLoading && (
                     <div className="w-56 h-40 rounded-xl border border-[var(--border-subtle)] flex flex-col items-center justify-center gap-1.5 text-xs">
                       <Lock className="w-4 h-4" aria-hidden="true" />
-                      <span>Membuka foto...</span>
+                      <span>{t('message.decryptingImage')}</span>
                     </div>
                   )}
                   {mediaError && (
@@ -300,7 +302,7 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
                     <button
                       type="button"
                       onClick={() => onPreviewImage(imageUrl, media.fileName)}
-                      aria-label={`Perbesar gambar ${media.fileName}`}
+                      aria-label={t('message.zoomImageAria', { fileName: media.fileName })}
                       className="block rounded-xl overflow-hidden focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
                     >
                       <img
@@ -332,7 +334,7 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
                     type="button"
                     disabled={downloadingDoc}
                     onClick={() => void handleDownloadDocument()}
-                    aria-label={`Unduh dan dekripsi ${media.fileName}`}
+                    aria-label={t('message.downloadDocAria', { fileName: media.fileName })}
                     className="p-2 rounded-full hover:bg-[var(--bg-hover)] shrink-0"
                   >
                     <Download className="w-4 h-4" aria-hidden="true" />
@@ -355,8 +357,8 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
               <button
                 type="button"
                 onClick={() => onReply(message)}
-                aria-label="Balas pesan ini"
-                title="Balas"
+                aria-label={t('message.replyAria')}
+                title={t('message.reply')}
                 className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
               >
                 <Reply className="w-4 h-4" aria-hidden="true" />
@@ -368,8 +370,8 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
                   setShowReactBar((prev) => !prev);
                   setShowDeleteMenu(false);
                 }}
-                aria-label="Beri reaksi emoji"
-                title="Reaksi"
+                aria-label={t('message.reactAria')}
+                title={t('message.react')}
                 className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
               >
                 <SmilePlus className="w-4 h-4" aria-hidden="true" />
@@ -381,8 +383,8 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
                   setShowDeleteMenu((prev) => !prev);
                   setShowReactBar(false);
                 }}
-                aria-label="Opsi hapus pesan"
-                title="Hapus"
+                aria-label={t('message.deleteAria')}
+                title={t('message.delete')}
                 className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--status-danger)] hover:bg-[var(--bg-hover)]"
               >
                 <Trash2 className="w-4 h-4" aria-hidden="true" />
@@ -427,7 +429,7 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
                     }}
                     className="w-full text-left px-3 py-2 hover:bg-[var(--bg-hover)] text-[var(--text-primary)]"
                   >
-                    Hapus untuk saya
+                    {t('message.deleteForMe')}
                   </button>
                   {isMine && (
                     <button
@@ -438,7 +440,7 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
                       }}
                       className="w-full text-left px-3 py-2 hover:bg-[var(--bg-hover)] text-[var(--status-danger)]"
                     >
-                      Hapus untuk semua orang
+                      {t('message.deleteForEveryone')}
                     </button>
                   )}
                 </div>

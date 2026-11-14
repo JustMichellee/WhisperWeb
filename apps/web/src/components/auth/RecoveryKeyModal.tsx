@@ -1,10 +1,12 @@
 import { useState, type FC } from 'react';
 import { Check, Copy, Download, ShieldAlert } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { useT } from '../../stores/useI18nStore';
 import { Modal } from '../common/Modal';
 
 export const RecoveryKeyModal: FC = () => {
   const { pendingRecoveryCode, user, clearPendingRecoveryCode } = useAuthStore();
+  const { t } = useT();
   const [copied, setCopied] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
 
@@ -18,11 +20,11 @@ export const RecoveryKeyModal: FC = () => {
 
   const handleDownload = () => {
     const content = [
-      'WhisperWeb Recovery Key (RAHASIA)',
+      t('recoveryModal.downloadFileHeader'),
       `Username: @${user.username}`,
       `Recovery Key: ${pendingRecoveryCode}`,
       '',
-      'Simpan kode ini di tempat aman. Anda membutuhkannya untuk memulihkan akun dan mendekripsi riwayat chat jika lupa password.',
+      t('recoveryModal.downloadFileNotice'),
     ].join('\n');
 
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -37,22 +39,19 @@ export const RecoveryKeyModal: FC = () => {
   return (
     <Modal
       open={true}
-      title="Simpan Recovery Key Anda"
+      title={t('recoveryModal.title')}
       onClose={clearPendingRecoveryCode}
       disableClose={true}
     >
       <div className="space-y-4">
         <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-[var(--bg-app)] border border-[var(--status-warning)] text-sm">
           <ShieldAlert className="w-5 h-5 shrink-0 text-[var(--status-warning)] mt-0.5" aria-hidden="true" />
-          <p className="text-[var(--text-primary)]">
-            Karena WhisperWeb tidak menyimpan email, nomor HP, maupun password asli Anda, kode ini
-            adalah satu-satunya cara memulihkan akun jika lupa password.
-          </p>
+          <p className="text-[var(--text-primary)]">{t('recoveryModal.warning')}</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-[var(--bg-app)] border border-[var(--border-subtle)] text-center">
           <p className="text-xs text-[var(--text-secondary)] mb-1.5">
-            Recovery Key untuk @{user.username}
+            {t('recoveryModal.codeLabel', { username: user.username })}
           </p>
           <p className="font-mono-code text-base font-semibold tracking-wider select-all break-all text-[var(--status-e2ee)]">
             {pendingRecoveryCode}
@@ -70,7 +69,7 @@ export const RecoveryKeyModal: FC = () => {
             ) : (
               <Copy className="w-4 h-4" aria-hidden="true" />
             )}
-            <span>{copied ? 'Tersalin' : 'Salin Kode'}</span>
+            <span>{copied ? t('recoveryModal.copied') : t('recoveryModal.copyCode')}</span>
           </button>
 
           <button
@@ -79,7 +78,7 @@ export const RecoveryKeyModal: FC = () => {
             className="py-2.5 px-3 rounded-xl bg-[var(--bg-app)] border border-[var(--border-subtle)] text-sm font-medium flex items-center justify-center gap-2 hover:bg-[var(--bg-hover)]"
           >
             <Download className="w-4 h-4" aria-hidden="true" />
-            <span>Unduh (.txt)</span>
+            <span>{t('recoveryModal.downloadTxt')}</span>
           </button>
         </div>
 
@@ -90,7 +89,7 @@ export const RecoveryKeyModal: FC = () => {
             onChange={(e) => setConfirmed(e.target.checked)}
             className="mt-1 w-4 h-4 accent-[var(--accent-primary)]"
           />
-          <span>Saya sudah menyalin atau mengunduh Recovery Key ini ke tempat yang aman.</span>
+          <span>{t('recoveryModal.confirmCheckbox')}</span>
         </label>
 
         <button
@@ -99,7 +98,7 @@ export const RecoveryKeyModal: FC = () => {
           onClick={clearPendingRecoveryCode}
           className="w-full py-2.5 px-4 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-fg)] font-semibold text-sm hover:bg-[var(--accent-hover)] disabled:opacity-45"
         >
-          Lanjut ke Ruang Chat
+          {t('recoveryModal.continueBtn')}
         </button>
       </div>
     </Modal>
