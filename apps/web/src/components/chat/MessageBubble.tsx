@@ -180,11 +180,11 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
 
   const cornerClass = isMine
     ? isFirstInGroup
-      ? 'rounded-2xl rounded-tr-sm'
-      : 'rounded-2xl'
+      ? 'rounded-[22px] rounded-br-[6px]'
+      : 'rounded-[22px]'
     : isFirstInGroup
-      ? 'rounded-2xl rounded-tl-sm'
-      : 'rounded-2xl';
+      ? 'rounded-[22px] rounded-bl-[6px]'
+      : 'rounded-[22px]';
 
   return (
     <div
@@ -198,7 +198,7 @@ export const MessageBubble: FC<MessageBubbleProps> = ({
           className={`relative px-4 py-2.5 shadow-sm ${cornerClass} ${
             isMine
               ? 'bg-[var(--bubble-out)] text-[var(--text-primary)]'
-              : 'bg-[var(--bubble-in)] text-[var(--text-primary)]'
+              : 'bg-[var(--bubble-in)] text-[var(--text-primary)] border border-[var(--border-subtle)]'
           }`}
         >
           {showSenderName && !isMine && isFirstInGroup && (

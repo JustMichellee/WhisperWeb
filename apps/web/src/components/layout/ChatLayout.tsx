@@ -63,7 +63,7 @@ export const ChatLayout: FC = () => {
       : null;
 
   return (
-    <div className="h-dvh w-full overflow-hidden flex bg-[var(--bg-app)] text-[var(--text-primary)]">
+    <div className="h-dvh w-full overflow-hidden flex bg-[var(--bg-app)] text-[var(--text-primary)] md:p-3.5 md:gap-3.5">
       <div className={`${activeConversation ? 'hidden md:flex' : 'flex'} w-full md:w-auto h-full`}>
         <Sidebar
           searchInputRef={searchInputRef}

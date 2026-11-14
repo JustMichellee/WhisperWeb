@@ -156,7 +156,7 @@ export const InfoDrawer: FC<InfoDrawerProps> = ({
     <>
       <aside
         aria-label="Informasi percakapan"
-        className="fixed inset-y-0 right-0 z-30 w-full sm:w-[340px] lg:static lg:w-[340px] shrink-0 bg-[var(--bg-sidebar)] border-l border-[var(--border-subtle)] flex flex-col h-full"
+        className="fixed inset-y-0 right-0 z-30 w-full sm:w-[340px] lg:static lg:w-[340px] shrink-0 bg-[var(--bg-sidebar)] border-l border-[var(--border-subtle)] lg:border lg:rounded-[26px] flex flex-col h-full overflow-hidden"
       >
       <div className="h-16 px-4 border-b border-[var(--border-subtle)] flex items-center gap-3 shrink-0">
         <button

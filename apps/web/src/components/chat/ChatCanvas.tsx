@@ -117,17 +117,18 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
 
   if (!conversation) {
     return (
-      <main className="hidden md:flex flex-1 flex-col items-center justify-center p-8 chat-canvas-surface">
-        <div className="max-w-sm text-center space-y-3">
-          <div className="w-14 h-14 mx-auto rounded-full bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] flex items-center justify-center">
-            <Lock className="w-6 h-6 text-[var(--status-e2ee)]" aria-hidden="true" />
+      <main className="hidden md:flex flex-1 flex-col items-center justify-center p-8 chat-canvas-surface md:rounded-[26px] md:border md:border-[var(--border-subtle)] overflow-hidden">
+        <div className="max-w-sm rounded-3xl bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] p-7 text-center space-y-3.5 shadow-sm">
+          <div className="w-12 h-12 mx-auto rounded-2xl bg-[var(--bg-canvas)] border border-[var(--border-subtle)] flex items-center justify-center">
+            <Lock className="w-5 h-5 text-[var(--status-e2ee)]" aria-hidden="true" />
           </div>
           <h1 className="text-lg font-semibold text-[var(--text-primary)]">
-            Siap buat ngobrol
+            Ruang ngobrol santai
           </h1>
           <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-            Pilih obrolan di kiri atau cari <span className="text-[var(--text-primary)]">@username</span>{' '}
-            untuk mulai chat santai yang tetap terjaga privasinya.
+            Pilih obrolan di sebelah kiri atau cari{' '}
+            <span className="font-medium text-[var(--text-primary)]">@username</span> buat mulai
+            cerita tanpa ribet dan tetap privat.
           </p>
         </div>
       </main>
@@ -230,8 +231,8 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
   };
 
   return (
-    <main className="flex-1 flex flex-col h-full min-w-0 chat-canvas-surface">
-      <header className="h-16 px-3 sm:px-5 bg-[var(--bg-sidebar)] border-b border-[var(--border-subtle)] flex items-center justify-between gap-2 shrink-0">
+    <main className="flex-1 flex flex-col h-full min-w-0 chat-canvas-surface md:rounded-[26px] md:border md:border-[var(--border-subtle)] overflow-hidden">
+      <header className="mx-3 mt-3 sm:mx-5 sm:mt-4 px-3 sm:px-4 py-2 rounded-2xl bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] shadow-sm flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
           <button
             type="button"
@@ -274,7 +275,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
               onClick={onOpenSafetyModal}
               aria-label="Lihat verifikasi keamanan obrolan"
               title="Verifikasi Keamanan"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-app)] text-xs font-medium text-[var(--status-e2ee)] hover:bg-[var(--bg-hover)]"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-xs font-medium text-[var(--status-e2ee)] hover:bg-[var(--bg-hover)]"
             >
               <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Terenkripsi</span>
@@ -304,7 +305,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
       </header>
 
       {showInChatSearch && (
-        <div className="px-4 py-2 bg-[var(--bg-sidebar)] border-b border-[var(--border-subtle)] flex items-center gap-2 shrink-0">
+        <div className="mx-3 mt-2 sm:mx-5 px-3.5 py-2 rounded-2xl bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] flex items-center gap-2 shrink-0">
           <label htmlFor="inchat-search" className="sr-only">
             Cari kata kunci dalam pesan
           </label>
@@ -403,147 +404,149 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
         </div>
       </div>
 
-      {replyTarget && (
-        <div className="px-4 sm:px-6 py-2.5 bg-[var(--bg-sidebar)] border-t border-[var(--border-subtle)] flex items-center justify-between gap-3 shrink-0">
-          <div className="min-w-0 pl-3 border-l-[3px] border-[var(--status-e2ee)]">
-            <p className="text-xs font-semibold text-[var(--status-e2ee)]">
-              Membalas{' '}
-              {conversation.members.find((m) => m.userId === replyTarget.senderId)?.displayName ??
-                'Pengguna'}
-            </p>
-            <p className="text-xs text-[var(--text-secondary)] truncate">
-              {replyTarget.decrypted?.text || replyTarget.decrypted?.media?.fileName || 'Pesan'}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setReplyTarget(null)}
-            aria-label="Batalkan balasan"
-            className="p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
-          >
-            <X className="w-4 h-4" aria-hidden="true" />
-          </button>
-        </div>
-      )}
-
-      {selectedFile && (
-        <div className="px-4 sm:px-6 py-2.5 bg-[var(--bg-sidebar)] border-t border-[var(--border-subtle)] flex items-center justify-between gap-3 shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
-            <FileText className="w-5 h-5 text-[var(--status-e2ee)] shrink-0" aria-hidden="true" />
-            <div className="min-w-0">
-              <p className="text-sm font-medium truncate">{selectedFile.name}</p>
-              <p className="text-xs tabular-nums text-[var(--text-secondary)]">
-                {(selectedFile.size / 1024).toFixed(1)} KB · Akan dienkripsi otomatis
+      <div className="mx-3 mb-3 sm:mx-5 sm:mb-4 rounded-[26px] bg-[var(--bg-input)] border border-[var(--border-subtle)] shadow-sm shrink-0 overflow-visible has-[textarea:focus-visible]:outline has-[textarea:focus-visible]:outline-2 has-[textarea:focus-visible]:outline-[var(--accent-primary)] has-[textarea:focus-visible]:outline-offset-2">
+        {replyTarget && (
+          <div className="px-4 py-2.5 border-b border-[var(--border-subtle)] flex items-center justify-between gap-3">
+            <div className="min-w-0 pl-3 border-l-[3px] border-[var(--status-e2ee)]">
+              <p className="text-xs font-semibold text-[var(--status-e2ee)]">
+                Membalas{' '}
+                {conversation.members.find((m) => m.userId === replyTarget.senderId)?.displayName ??
+                  'Pengguna'}
+              </p>
+              <p className="text-xs text-[var(--text-secondary)] truncate">
+                {replyTarget.decrypted?.text || replyTarget.decrypted?.media?.fileName || 'Pesan'}
               </p>
             </div>
+            <button
+              type="button"
+              onClick={() => setReplyTarget(null)}
+              aria-label="Batalkan balasan"
+              className="p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
+            >
+              <X className="w-4 h-4" aria-hidden="true" />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setSelectedFile(null)}
-            aria-label="Hapus lampiran terpilih"
-            className="p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
-          >
-            <X className="w-4 h-4" aria-hidden="true" />
-          </button>
-        </div>
-      )}
+        )}
 
-      {sendError && (
-        <div
-          role="alert"
-          className="px-4 py-2 bg-[var(--bg-sidebar)] border-t border-[var(--status-danger)] flex items-center justify-between gap-2 text-xs text-[var(--status-danger)]"
-        >
-          <span className="flex items-center gap-1.5">
-            <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
-            <span>{sendError}</span>
-          </span>
-          <button type="button" onClick={() => setSendError(null)} aria-label="Tutup peringatan">
-            <X className="w-3.5 h-3.5" aria-hidden="true" />
-          </button>
-        </div>
-      )}
-
-      {isBlocked ? (
-        <div className="px-4 py-3.5 bg-[var(--bg-sidebar)] border-t border-[var(--border-subtle)] text-center text-sm text-[var(--text-secondary)]">
-          Anda memblokir kontak ini. Buka blokir di Info Kontak untuk kembali mengirim pesan.
-        </div>
-      ) : (
-        <form
-          onSubmit={(e) => void submitMessage(e)}
-          className="relative px-3 sm:px-5 py-3 bg-[var(--bg-sidebar)] border-t border-[var(--border-subtle)] flex items-end gap-2 shrink-0"
-        >
-          {showEmojiPicker && (
-            <div className="absolute bottom-20 left-4 z-20 p-2 rounded-2xl bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] shadow-xl grid grid-cols-6 gap-1">
-              {COMPOSER_EMOJIS.map((emoji) => (
-                <button
-                  key={emoji}
-                  type="button"
-                  onClick={() => {
-                    handleTextChange(text + emoji);
-                    textareaRef.current?.focus();
-                  }}
-                  className="w-9 h-9 rounded-xl hover:bg-[var(--bg-hover)] text-lg flex items-center justify-center"
-                >
-                  {emoji}
-                </button>
-              ))}
+        {selectedFile && (
+          <div className="px-4 py-2.5 border-b border-[var(--border-subtle)] flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <FileText className="w-5 h-5 text-[var(--status-e2ee)] shrink-0" aria-hidden="true" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate">{selectedFile.name}</p>
+                <p className="text-xs tabular-nums text-[var(--text-secondary)]">
+                  {(selectedFile.size / 1024).toFixed(1)} KB · Akan dienkripsi otomatis
+                </p>
+              </div>
             </div>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setShowEmojiPicker((prev) => !prev)}
-            aria-label="Pilih emoji"
-            title="Emoji"
-            className="min-w-[44px] min-h-[44px] p-2.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center shrink-0"
-          >
-            <Smile className="w-5 h-5" aria-hidden="true" />
-          </button>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="hidden"
-            onChange={handleFilePicked}
-            aria-label="Unggah gambar atau dokumen"
-          />
-
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            aria-label="Lampirkan gambar atau dokumen"
-            title="Lampirkan gambar atau dokumen (maks. 25 MB)"
-            className="min-w-[44px] min-h-[44px] p-2.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center shrink-0"
-          >
-            <Paperclip className="w-5 h-5" aria-hidden="true" />
-          </button>
-
-          <div className="flex-1 min-w-0">
-            <label htmlFor="chat-composer" className="sr-only">
-              Ketik pesan
-            </label>
-            <textarea
-              ref={textareaRef}
-              id="chat-composer"
-              rows={1}
-              value={text}
-              onChange={(e) => handleTextChange(e.target.value)}
-              onKeyDown={handleComposerKeyDown}
-              placeholder={selectedFile ? 'Tambahkan keterangan...' : 'Tulis pesan...'}
-              className="w-full px-4 py-2.5 rounded-3xl bg-[var(--bg-input)] text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] border border-[var(--border-subtle)] text-sm resize-none max-h-28"
-            />
+            <button
+              type="button"
+              onClick={() => setSelectedFile(null)}
+              aria-label="Hapus lampiran terpilih"
+              className="p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
+            >
+              <X className="w-4 h-4" aria-hidden="true" />
+            </button>
           </div>
+        )}
 
-          <button
-            type="submit"
-            disabled={sending || (!text.trim() && !selectedFile)}
-            aria-label="Kirim pesan"
-            className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full bg-[var(--accent-primary)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)] disabled:opacity-45 flex items-center justify-center shrink-0"
+        {sendError && (
+          <div
+            role="alert"
+            className="px-4 py-2 border-b border-[var(--status-danger)] flex items-center justify-between gap-2 text-xs text-[var(--status-danger)]"
           >
-            <SendHorizontal className="w-5 h-5" aria-hidden="true" />
-          </button>
-        </form>
-      )}
+            <span className="flex items-center gap-1.5">
+              <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
+              <span>{sendError}</span>
+            </span>
+            <button type="button" onClick={() => setSendError(null)} aria-label="Tutup peringatan">
+              <X className="w-3.5 h-3.5" aria-hidden="true" />
+            </button>
+          </div>
+        )}
+
+        {isBlocked ? (
+          <div className="px-4 py-3.5 text-center text-sm text-[var(--text-secondary)]">
+            Anda memblokir kontak ini. Buka blokir di Info Kontak untuk kembali mengirim pesan.
+          </div>
+        ) : (
+          <form
+            onSubmit={(e) => void submitMessage(e)}
+            className="relative px-2.5 sm:px-3.5 py-2 flex items-end gap-1.5"
+          >
+            {showEmojiPicker && (
+              <div className="absolute bottom-16 left-2 z-20 p-2 rounded-2xl bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] shadow-xl grid grid-cols-6 gap-1">
+                {COMPOSER_EMOJIS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => {
+                      handleTextChange(text + emoji);
+                      textareaRef.current?.focus();
+                    }}
+                    className="w-9 h-9 rounded-xl hover:bg-[var(--bg-hover)] text-lg flex items-center justify-center"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowEmojiPicker((prev) => !prev)}
+              aria-label="Pilih emoji"
+              title="Emoji"
+              className="min-w-[42px] min-h-[42px] p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center shrink-0"
+            >
+              <Smile className="w-5 h-5" aria-hidden="true" />
+            </button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={handleFilePicked}
+              aria-label="Unggah gambar atau dokumen"
+            />
+
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="Lampirkan gambar atau dokumen"
+              title="Lampirkan gambar atau dokumen (maks. 25 MB)"
+              className="min-w-[42px] min-h-[42px] p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center shrink-0"
+            >
+              <Paperclip className="w-5 h-5" aria-hidden="true" />
+            </button>
+
+            <div className="flex-1 min-w-0">
+              <label htmlFor="chat-composer" className="sr-only">
+                Ketik pesan
+              </label>
+              <textarea
+                ref={textareaRef}
+                id="chat-composer"
+                rows={1}
+                value={text}
+                onChange={(e) => handleTextChange(e.target.value)}
+                onKeyDown={handleComposerKeyDown}
+                placeholder={selectedFile ? 'Tambahkan keterangan...' : 'Tulis pesan santai...'}
+                className="w-full px-2 py-2.5 bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] text-sm resize-none max-h-28 focus-visible:outline-none"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={sending || (!text.trim() && !selectedFile)}
+              aria-label="Kirim pesan"
+              className="min-w-[42px] min-h-[42px] w-[42px] h-[42px] rounded-full bg-[var(--accent-primary)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)] disabled:opacity-45 flex items-center justify-center shrink-0"
+            >
+              <SendHorizontal className="w-5 h-5" aria-hidden="true" />
+            </button>
+          </form>
+        )}
+      </div>
     </main>
   );
 };

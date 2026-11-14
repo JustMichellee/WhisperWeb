@@ -2,50 +2,52 @@
 
 :root,
 [data-theme="dark"] {
-  --bg-app: #262D35;
-  --bg-sidebar: #303841;
-  --bg-input: #242A32;
-  --bg-hover: #38414B;
-  --bg-active: #3D4C52;
-  --bubble-out: #315155;
-  --bubble-in: #363F49;
-  --reply-out-bg: #274145;
-  --reply-in-bg: #2C343D;
-  --accent-primary: #FF5722;
-  --accent-hover: #FF6D3F;
-  --accent-fg: #181D23;
-  --read-receipt: #9AD3D6;
-  --text-primary: #F5F5F5;
-  --text-secondary: #B6C0CA;
-  --text-bubble-out-meta: #C5DCDE;
-  --border-subtle: #3B4450;
-  --status-e2ee: #76ABAE;
-  --status-warning: #F59E0B;
-  --status-danger: #FF7D52;
+  --bg-app: #151D24;
+  --bg-canvas: #1B242E;
+  --bg-sidebar: #222D38;
+  --bg-input: #18212A;
+  --bg-hover: #2A3745;
+  --bg-active: #2C3E4F;
+  --bubble-out: #2E4A62;
+  --bubble-in: #273340;
+  --reply-out-bg: #243B4E;
+  --reply-in-bg: #1E2833;
+  --accent-primary: #81A6C6;
+  --accent-hover: #96B7D4;
+  --accent-fg: #121B23;
+  --read-receipt: #AACDDC;
+  --text-primary: #F3E3D0;
+  --text-secondary: #C6B9A9;
+  --text-bubble-out-meta: #AACDDC;
+  --border-subtle: #324150;
+  --status-e2ee: #AACDDC;
+  --status-warning: #F0B96B;
+  --status-danger: #F28B82;
   color-scheme: dark;
 }
 
 [data-theme="light"] {
-  --bg-app: #EAECEE;
-  --bg-sidebar: #F5F5F5;
-  --bg-input: #FFFFFF;
-  --bg-hover: #E7EAED;
-  --bg-active: #DFE7E8;
-  --bubble-out: #D9E8E9;
-  --bubble-in: #FFFFFF;
-  --reply-out-bg: #C7DBDD;
-  --reply-in-bg: #E7EBEE;
-  --accent-primary: #FF5722;
-  --accent-hover: #E64A19;
-  --accent-fg: #181D23;
-  --read-receipt: #2B5B5E;
-  --text-primary: #303841;
-  --text-secondary: #535F6B;
-  --text-bubble-out-meta: #45545B;
-  --border-subtle: #CFD5DC;
-  --status-e2ee: #47787B;
-  --status-warning: #B45309;
-  --status-danger: #C83B12;
+  --bg-app: #E6D8C7;
+  --bg-canvas: #F3E3D0;
+  --bg-sidebar: #FAF4EC;
+  --bg-input: #FFFDF9;
+  --bg-hover: #E8DAC9;
+  --bg-active: #D3E4EC;
+  --bubble-out: #AACDDC;
+  --bubble-in: #FAF4EC;
+  --reply-out-bg: #95BED0;
+  --reply-in-bg: #EDE1D1;
+  --accent-primary: #81A6C6;
+  --accent-hover: #96B7D4;
+  --accent-fg: #121B23;
+  --read-receipt: #2B5375;
+  --text-primary: #1E2B37;
+  --text-secondary: #475666;
+  --text-bubble-out-meta: #2B4255;
+  --border-subtle: #D2C4B4;
+  --status-e2ee: #356085;
+  --status-warning: #9A5B13;
+  --status-danger: #B83A2E;
   color-scheme: light;
 }
 
@@ -108,7 +110,7 @@
 }
 
 .chat-canvas-surface {
-  background-color: var(--bg-app);
+  background-color: var(--bg-canvas);
 }
 
 /* Custom subtle scrollbars matching messenger theme */

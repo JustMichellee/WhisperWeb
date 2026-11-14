@@ -134,9 +134,9 @@ export const Sidebar: FC<SidebarProps> = ({
   return (
     <aside
       aria-label="Daftar percakapan"
-      className="w-full md:w-[330px] lg:w-[360px] shrink-0 h-full flex flex-col bg-[var(--bg-sidebar)] border-r border-[var(--border-subtle)]"
+      className="w-full md:w-[340px] lg:w-[360px] shrink-0 h-full flex flex-col bg-[var(--bg-sidebar)] border-r border-[var(--border-subtle)] md:border md:rounded-[26px] overflow-hidden"
     >
-      <div className="h-16 px-4 flex items-center justify-between gap-2 shrink-0">
+      <div className="px-4 pt-4 pb-3 flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <Avatar
             name={user.displayName}
@@ -146,31 +146,33 @@ export const Sidebar: FC<SidebarProps> = ({
           />
           <div className="min-w-0">
             <p className="text-sm font-semibold truncate">{user.displayName}</p>
-            <p className="text-xs text-[var(--text-secondary)] truncate">@{user.username}</p>
+            <p className="text-xs text-[var(--text-secondary)] truncate">
+              {wsConnected ? 'Terhubung' : 'Menghubungkan'} · @{user.username}
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-0.5 shrink-0">
+        <div className="flex items-center gap-0.5 p-1 rounded-full bg-[var(--bg-canvas)] border border-[var(--border-subtle)] shrink-0">
           <button
             type="button"
             onClick={onOpenNewGroup}
             aria-label="Buat grup baru"
             title="Buat Grup Baru"
-            className="min-w-[40px] min-h-[40px] p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center"
+            className="min-w-[36px] min-h-[36px] p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center"
           >
-            <Users className="w-[18px] h-[18px]" aria-hidden="true" />
+            <Users className="w-[17px] h-[17px]" aria-hidden="true" />
           </button>
           <button
             type="button"
             onClick={toggleTheme}
             aria-label={theme === 'dark' ? 'Ubah ke mode terang' : 'Ubah ke mode gelap'}
             title={theme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
-            className="min-w-[40px] min-h-[40px] p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center"
+            className="min-w-[36px] min-h-[36px] p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center"
           >
             {theme === 'dark' ? (
-              <Sun className="w-[18px] h-[18px]" aria-hidden="true" />
+              <Sun className="w-[17px] h-[17px]" aria-hidden="true" />
             ) : (
-              <Moon className="w-[18px] h-[18px]" aria-hidden="true" />
+              <Moon className="w-[17px] h-[17px]" aria-hidden="true" />
             )}
           </button>
           <button
@@ -178,18 +180,18 @@ export const Sidebar: FC<SidebarProps> = ({
             onClick={onOpenSettings}
             aria-label="Pengaturan profil dan Passkey"
             title="Profil & Pengaturan"
-            className="min-w-[40px] min-h-[40px] p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center"
+            className="min-w-[36px] min-h-[36px] p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center"
           >
-            <Settings className="w-[18px] h-[18px]" aria-hidden="true" />
+            <Settings className="w-[17px] h-[17px]" aria-hidden="true" />
           </button>
           <button
             type="button"
             onClick={() => void handleLogout()}
             aria-label="Keluar dari akun"
             title="Keluar"
-            className="min-w-[40px] min-h-[40px] p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--status-danger)] hover:bg-[var(--bg-hover)] flex items-center justify-center"
+            className="min-w-[36px] min-h-[36px] p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--status-danger)] hover:bg-[var(--bg-hover)] flex items-center justify-center"
           >
-            <LogOut className="w-[18px] h-[18px]" aria-hidden="true" />
+            <LogOut className="w-[17px] h-[17px]" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -230,10 +232,10 @@ export const Sidebar: FC<SidebarProps> = ({
                 role="tab"
                 aria-selected={active}
                 onClick={() => setFilterTab(t.id)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                className={`px-3.5 py-1.5 rounded-full text-xs transition-colors ${
                   active
-                    ? 'bg-[var(--bg-active)] text-[var(--text-primary)] font-semibold'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
+                    ? 'bg-[var(--accent-primary)] text-[var(--accent-fg)] font-semibold'
+                    : 'bg-[var(--bg-canvas)] text-[var(--text-secondary)] font-medium hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
                 }`}
               >
                 {t.label}

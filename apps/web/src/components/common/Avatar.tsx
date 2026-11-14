@@ -9,17 +9,17 @@ interface AvatarProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-const AVATAR_TONES = [
-  '#3D5A6C',
-  '#4F6D7A',
-  '#47787B',
-  '#303841',
-  '#5A6672',
-  '#5F7470',
-  '#76ABAE',
+const AVATAR_TONES: Array<{ bg: string; fg: string }> = [
+  { bg: '#81A6C6', fg: '#121B23' },
+  { bg: '#AACDDC', fg: '#121B23' },
+  { bg: '#D2C4B4', fg: '#121B23' },
+  { bg: '#B8A592', fg: '#121B23' },
+  { bg: '#3B5A75', fg: '#F3E3D0' },
+  { bg: '#2E485E', fg: '#F3E3D0' },
+  { bg: '#5C5043', fg: '#F3E3D0' },
 ];
 
-function pickTone(seed: string): string {
+function pickTone(seed: string): { bg: string; fg: string } {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     hash = (hash * 31 + seed.charCodeAt(i)) | 0;
@@ -60,8 +60,8 @@ export const Avatar: FC<AvatarProps> = ({
         <div
           className="w-full h-full rounded-full flex items-center justify-center font-semibold select-none"
           style={{
-            backgroundColor: tone,
-            color: tone === '#76ABAE' ? '#181D23' : '#F5F5F5',
+            backgroundColor: tone.bg,
+            color: tone.fg,
           }}
           aria-hidden="true"
         >

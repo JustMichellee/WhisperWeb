@@ -225,170 +225,208 @@ export const AuthScreen: FC = () => {
         )}
       </button>
 
-      <section className="w-full max-w-[430px] rounded-3xl bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] p-6 sm:p-8 shadow-xl space-y-6">
-        <div className="flex flex-col items-center text-center space-y-2.5">
-          <div className="w-12 h-12 rounded-2xl bg-[var(--bg-app)] flex items-center justify-center">
-            <MessageCircle className="w-6 h-6 text-[var(--status-e2ee)]" aria-hidden="true" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">WhisperWeb</h1>
-            <p className="text-sm text-[var(--text-secondary)] mt-1">
-              Ruang ngobrol santai, ringan, dan terenkripsi tanpa nomor HP.
-            </p>
-          </div>
-        </div>
+      <section className="w-full max-w-[430px] md:max-w-4xl rounded-[28px] bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] shadow-xl overflow-hidden grid md:grid-cols-[1fr_410px]">
+        <div className="hidden md:flex flex-col justify-between p-8 bg-[var(--bg-canvas)] border-r border-[var(--border-subtle)]">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] text-xs font-semibold text-[var(--text-primary)]">
+              <MessageCircle className="w-4 h-4 text-[var(--status-e2ee)]" aria-hidden="true" />
+              <span>WhisperWeb</span>
+            </div>
 
-        <div
-          role="tablist"
-          aria-label="Pilihan autentikasi"
-          className="grid grid-cols-3 gap-1 p-1 rounded-full bg-[var(--bg-app)]"
-        >
-          {(
-            [
-              { id: 'login', label: 'Masuk' },
-              { id: 'register', label: 'Daftar' },
-              { id: 'recover', label: 'Pulihkan' },
-            ] as const
-          ).map((item) => {
-            const selected = tab === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                aria-selected={selected}
-                onClick={() => {
-                  setTab(item.id);
-                  setError(null);
-                }}
-                className={`py-2 text-xs font-semibold rounded-full transition-colors ${
-                  selected
-                    ? 'bg-[var(--bg-sidebar)] text-[var(--text-primary)] shadow-sm'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-                }`}
-              >
-                {item.label}
-              </button>
-            );
-          })}
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="auth-username" className="block text-sm font-medium mb-1.5">
-              Username
-            </label>
-            <input
-              id="auth-username"
-              type="text"
-              autoComplete="username"
-              required
-              minLength={3}
-              maxLength={24}
-              value={username}
-              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-              placeholder="misal: budi_santoso"
-              className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-sm"
-            />
-            {tab === 'register' && (
-              <p className="mt-1.5 text-xs text-[var(--text-secondary)]">
-                Pakai huruf kecil, angka, atau garis bawah (3 sampai 24 karakter).
+            <div className="space-y-3">
+              <h1 className="text-3xl font-bold tracking-tight leading-snug text-[var(--text-primary)]">
+                Ngobrol santai tanpa perlu bagi nomor HP.
+              </h1>
+              <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+                Suasana ringan buat chat berdua atau grup kecil. Semua pesan dan lampiran dienkripsi
+                langsung di perangkat sebelum dikirim.
               </p>
-            )}
+            </div>
           </div>
 
-          {tab === 'register' && (
+          <div className="space-y-2.5 pt-6 border-t border-[var(--border-subtle)] text-xs text-[var(--text-secondary)]">
+            <div className="flex items-center gap-2">
+              <Lock className="w-3.5 h-3.5 text-[var(--status-e2ee)] shrink-0" aria-hidden="true" />
+              <span>Enkripsi end-to-end otomatis per perangkat</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <KeyRound className="w-3.5 h-3.5 text-[var(--status-e2ee)] shrink-0" aria-hidden="true" />
+              <span>Masuk cepat dengan Passkey atau kata sandi</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 sm:p-8 space-y-6">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-2">
+            <div className="md:hidden w-12 h-12 rounded-2xl bg-[var(--bg-canvas)] border border-[var(--border-subtle)] flex items-center justify-center">
+              <MessageCircle className="w-6 h-6 text-[var(--status-e2ee)]" aria-hidden="true" />
+            </div>
             <div>
-              <label htmlFor="auth-displayname" className="block text-sm font-medium mb-1.5">
-                Nama Panggilan
+              <h2 className="text-xl md:text-2xl font-bold tracking-tight">
+                {tab === 'login' ? 'Masuk ke Ruang Chat' : tab === 'register' ? 'Buat Akun Baru' : 'Pulihkan Akun'}
+              </h2>
+              <p className="text-sm text-[var(--text-secondary)] mt-1">
+                {tab === 'login'
+                  ? 'Lanjutkan obrolan Anda dengan tenang.'
+                  : tab === 'register'
+                    ? 'Cukup pakai username, tanpa nomor HP.'
+                    : 'Masukkan Recovery Key 24 karakter Anda.'}
+              </p>
+            </div>
+          </div>
+
+          <div
+            role="tablist"
+            aria-label="Pilihan autentikasi"
+            className="grid grid-cols-3 gap-1 p-1 rounded-full bg-[var(--bg-canvas)] border border-[var(--border-subtle)]"
+          >
+            {(
+              [
+                { id: 'login', label: 'Masuk' },
+                { id: 'register', label: 'Daftar' },
+                { id: 'recover', label: 'Pulihkan' },
+              ] as const
+            ).map((item) => {
+              const selected = tab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  onClick={() => {
+                    setTab(item.id);
+                    setError(null);
+                  }}
+                  className={`py-2 text-xs font-semibold rounded-full transition-colors ${
+                    selected
+                      ? 'bg-[var(--accent-primary)] text-[var(--accent-fg)] shadow-sm'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="auth-username" className="block text-sm font-medium mb-1.5">
+                Username
               </label>
               <input
-                id="auth-displayname"
+                id="auth-username"
                 type="text"
+                autoComplete="username"
                 required
-                maxLength={48}
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Nama yang tampil di obrolan"
+                minLength={3}
+                maxLength={24}
+                value={username}
+                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                placeholder="misal: budi_santoso"
+                className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-sm"
+              />
+              {tab === 'register' && (
+                <p className="mt-1.5 text-xs text-[var(--text-secondary)]">
+                  Pakai huruf kecil, angka, atau garis bawah (3 sampai 24 karakter).
+                </p>
+              )}
+            </div>
+
+            {tab === 'register' && (
+              <div>
+                <label htmlFor="auth-displayname" className="block text-sm font-medium mb-1.5">
+                  Nama Panggilan
+                </label>
+                <input
+                  id="auth-displayname"
+                  type="text"
+                  required
+                  maxLength={48}
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Nama yang tampil di obrolan"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-sm"
+                />
+              </div>
+            )}
+
+            {tab === 'recover' && (
+              <div>
+                <label htmlFor="auth-recovery" className="block text-sm font-medium mb-1.5">
+                  Recovery Key (24 Karakter)
+                </label>
+                <input
+                  id="auth-recovery"
+                  type="text"
+                  required
+                  value={recoveryCode}
+                  onChange={(e) => setRecoveryCode(e.target.value)}
+                  placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] font-mono-code text-sm"
+                />
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="auth-password" className="block text-sm font-medium mb-1.5">
+                {tab === 'recover' ? 'Password Baru' : 'Password'}
+              </label>
+              <input
+                id="auth-password"
+                type="password"
+                autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
+                required
+                minLength={8}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Minimal 8 karakter"
                 className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-sm"
               />
             </div>
-          )}
 
-          {tab === 'recover' && (
-            <div>
-              <label htmlFor="auth-recovery" className="block text-sm font-medium mb-1.5">
-                Recovery Key (24 Karakter)
-              </label>
-              <input
-                id="auth-recovery"
-                type="text"
-                required
-                value={recoveryCode}
-                onChange={(e) => setRecoveryCode(e.target.value)}
-                placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
-                className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] font-mono-code text-sm"
-              />
-            </div>
-          )}
+            {error && (
+              <div
+                role="alert"
+                className="flex items-start gap-2 p-3 rounded-xl border border-[var(--status-danger)] text-sm text-[var(--status-danger)]"
+              >
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+                <span>{error}</span>
+              </div>
+            )}
 
-          <div>
-            <label htmlFor="auth-password" className="block text-sm font-medium mb-1.5">
-              {tab === 'recover' ? 'Password Baru' : 'Password'}
-            </label>
-            <input
-              id="auth-password"
-              type="password"
-              autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
-              required
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Minimal 8 karakter"
-              className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-sm"
-            />
-          </div>
-
-          {error && (
-            <div
-              role="alert"
-              className="flex items-start gap-2 p-3 rounded-xl border border-[var(--status-danger)] text-sm text-[var(--status-danger)]"
-            >
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 px-4 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-fg)] font-semibold text-sm hover:bg-[var(--accent-hover)] disabled:opacity-60"
-          >
-            {loading
-              ? 'Menyiapkan obrolan...'
-              : tab === 'login'
-                ? 'Masuk'
-                : tab === 'register'
-                  ? 'Daftar & Mulai Chat'
-                  : 'Pulihkan Akun'}
-          </button>
-
-          {tab === 'login' && (
             <button
-              type="button"
+              type="submit"
               disabled={loading}
-              onClick={() => void handlePasskeyLogin()}
-              className="w-full py-2.5 px-4 rounded-xl bg-transparent text-[var(--text-primary)] border border-[var(--border-subtle)] font-medium text-sm flex items-center justify-center gap-2 hover:bg-[var(--bg-hover)] disabled:opacity-60"
+              className="w-full py-2.5 px-4 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-fg)] font-semibold text-sm hover:bg-[var(--accent-hover)] disabled:opacity-60"
             >
-              <KeyRound className="w-4 h-4" aria-hidden="true" />
-              <span>Masuk pakai Passkey</span>
+              {loading
+                ? 'Menyiapkan obrolan...'
+                : tab === 'login'
+                  ? 'Masuk'
+                  : tab === 'register'
+                    ? 'Daftar & Mulai Chat'
+                    : 'Pulihkan Akun'}
             </button>
-          )}
-        </form>
 
-        <div className="flex items-center justify-center gap-1.5 text-xs text-[var(--text-secondary)] pt-1">
-          <Lock className="w-3.5 h-3.5 text-[var(--status-e2ee)] shrink-0" aria-hidden="true" />
-          <span>Pesan terkunci otomatis di perangkat Anda.</span>
+            {tab === 'login' && (
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => void handlePasskeyLogin()}
+                className="w-full py-2.5 px-4 rounded-xl bg-transparent text-[var(--text-primary)] border border-[var(--border-subtle)] font-medium text-sm flex items-center justify-center gap-2 hover:bg-[var(--bg-hover)] disabled:opacity-60"
+              >
+                <KeyRound className="w-4 h-4" aria-hidden="true" />
+                <span>Masuk pakai Passkey</span>
+              </button>
+            )}
+          </form>
+
+          <div className="flex md:hidden items-center justify-center gap-1.5 text-xs text-[var(--text-secondary)] pt-1">
+            <Lock className="w-3.5 h-3.5 text-[var(--status-e2ee)] shrink-0" aria-hidden="true" />
+            <span>Pesan terkunci otomatis di perangkat Anda.</span>
+          </div>
         </div>
       </section>
     </main>
