@@ -10,13 +10,13 @@ interface AvatarProps {
 }
 
 const AVATAR_TONES: Array<{ bg: string; fg: string }> = [
-  { bg: '#81A6C6', fg: '#121B23' },
-  { bg: '#AACDDC', fg: '#121B23' },
-  { bg: '#D2C4B4', fg: '#121B23' },
-  { bg: '#B8A592', fg: '#121B23' },
-  { bg: '#3B5A75', fg: '#F3E3D0' },
-  { bg: '#2E485E', fg: '#F3E3D0' },
-  { bg: '#5C5043', fg: '#F3E3D0' },
+  { bg: '#437DFB', fg: '#FFFFFF' },
+  { bg: '#313131', fg: '#FAFAFA' },
+  { bg: '#8B5CF6', fg: '#FFFFFF' },
+  { bg: '#16A34A', fg: '#FFFFFF' },
+  { bg: '#D97706', fg: '#FFFFFF' },
+  { bg: '#0284C7', fg: '#FFFFFF' },
+  { bg: '#E11D48', fg: '#FFFFFF' },
 ];
 
 function pickTone(seed: string): { bg: string; fg: string } {

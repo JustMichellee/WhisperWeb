@@ -21,7 +21,7 @@ export function Bubble({
     <div
       data-variant={variant}
       className={joinClasses(
-        'relative min-w-0 max-w-full rounded-[22px] shadow-sm transition-colors',
+        'relative min-w-0 max-w-full rounded-2xl shadow-sm transition-colors',
         variant === 'default'
           ? 'bg-[var(--bubble-out)] text-[var(--text-primary)]'
           : 'bg-[var(--bubble-in)] text-[var(--text-primary)] border border-[var(--border-subtle)]',

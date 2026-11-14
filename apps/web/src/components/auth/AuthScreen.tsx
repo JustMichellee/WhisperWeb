@@ -225,7 +225,7 @@ export const AuthScreen: FC = () => {
         )}
       </button>
 
-      <section className="w-full max-w-[430px] md:max-w-4xl rounded-[28px] bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] shadow-xl overflow-hidden grid md:grid-cols-[1fr_410px]">
+      <section className="w-full max-w-[430px] md:max-w-4xl rounded-2xl bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] shadow-xl overflow-hidden grid md:grid-cols-[1fr_410px]">
         <div className="hidden md:flex flex-col justify-between p-8 bg-[var(--bg-canvas)] border-r border-[var(--border-subtle)]">
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] text-xs font-semibold text-[var(--text-primary)]">

@@ -34,52 +34,52 @@
 
 :root,
 [data-theme="dark"] {
-  --bg-app: #151D24;
-  --bg-canvas: #1B242E;
-  --bg-sidebar: #222D38;
-  --bg-input: #18212A;
-  --bg-hover: #2A3745;
-  --bg-active: #2C3E4F;
-  --bubble-out: #2E4A62;
-  --bubble-in: #273340;
-  --reply-out-bg: #243B4E;
-  --reply-in-bg: #1E2833;
-  --accent-primary: #81A6C6;
-  --accent-hover: #96B7D4;
-  --accent-fg: #121B23;
-  --read-receipt: #AACDDC;
-  --text-primary: #F3E3D0;
-  --text-secondary: #C6B9A9;
-  --text-bubble-out-meta: #AACDDC;
-  --border-subtle: #324150;
-  --status-e2ee: #AACDDC;
-  --status-warning: #F0B96B;
-  --status-danger: #F28B82;
+  --bg-app: #141414;
+  --bg-canvas: #121212;
+  --bg-sidebar: #1A1A1A;
+  --bg-input: #1F1F1F;
+  --bg-hover: #252525;
+  --bg-active: #2A2A2A;
+  --bubble-out: #1D3156;
+  --bubble-in: #1E1E1E;
+  --reply-out-bg: #152440;
+  --reply-in-bg: #161616;
+  --accent-primary: #437DFB;
+  --accent-hover: #5B8FFC;
+  --accent-fg: #FFFFFF;
+  --read-receipt: #6094FC;
+  --text-primary: #FAFAFA;
+  --text-secondary: #A1A1A1;
+  --text-bubble-out-meta: #B4CAFF;
+  --border-subtle: #252525;
+  --status-e2ee: #6094FC;
+  --status-warning: #F59E0D;
+  --status-danger: #F43F5E;
   color-scheme: dark;
 }
 
 [data-theme="light"] {
-  --bg-app: #E6D8C7;
-  --bg-canvas: #F3E3D0;
-  --bg-sidebar: #FAF4EC;
-  --bg-input: #FFFDF9;
-  --bg-hover: #E8DAC9;
-  --bg-active: #D3E4EC;
-  --bubble-out: #AACDDC;
-  --bubble-in: #FAF4EC;
-  --reply-out-bg: #95BED0;
-  --reply-in-bg: #EDE1D1;
-  --accent-primary: #81A6C6;
-  --accent-hover: #96B7D4;
-  --accent-fg: #121B23;
-  --read-receipt: #2B5375;
-  --text-primary: #1E2B37;
-  --text-secondary: #475666;
-  --text-bubble-out-meta: #2B4255;
-  --border-subtle: #D2C4B4;
-  --status-e2ee: #356085;
-  --status-warning: #9A5B13;
-  --status-danger: #B83A2E;
+  --bg-app: #F5F5F5;
+  --bg-canvas: #FAFAFA;
+  --bg-sidebar: #FFFFFF;
+  --bg-input: #FFFFFF;
+  --bg-hover: #F4F4F5;
+  --bg-active: #EFF4FF;
+  --bubble-out: #EBF1FE;
+  --bubble-in: #F5F5F5;
+  --reply-out-bg: #DCE7FD;
+  --reply-in-bg: #EBEBEB;
+  --accent-primary: #437DFB;
+  --accent-hover: #2E6AF0;
+  --accent-fg: #FFFFFF;
+  --read-receipt: #2563EB;
+  --text-primary: #09090B;
+  --text-secondary: #6D6D6D;
+  --text-bubble-out-meta: #3B5284;
+  --border-subtle: #E7E7E7;
+  --status-e2ee: #2563EB;
+  --status-warning: #B45309;
+  --status-danger: #D93036;
   color-scheme: light;
 }
 
