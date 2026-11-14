@@ -8,6 +8,7 @@ import { ImageLightbox } from '../chat/ImageLightbox';
 import { InfoDrawer } from '../chat/InfoDrawer';
 import { SafetyNumberModal } from '../chat/SafetyNumberModal';
 import { CreateGroupModal } from '../group/CreateGroupModal';
+import { AppRail, type ChatFolderTab } from './AppRail';
 import { Sidebar } from './Sidebar';
 
 export const ChatLayout: FC = () => {
@@ -21,6 +22,10 @@ export const ChatLayout: FC = () => {
     setReplyTarget,
   } = useChatStore();
 
+  const [filterTab, setFilterTab] = useState<ChatFolderTab>('all');
+  const [railCollapsed, setRailCollapsed] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 1100 : false
+  );
   const [showInfoDrawer, setShowInfoDrawer] = useState(false);
   const [showNewGroup, setShowNewGroup] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -42,7 +47,13 @@ export const ChatLayout: FC = () => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         searchInputRef.current?.focus();
-      } else if (e.key === 'Escape' && !showNewGroup && !showSettings && !showSafetyModal && !lightbox) {
+      } else if (
+        e.key === 'Escape' &&
+        !showNewGroup &&
+        !showSettings &&
+        !showSafetyModal &&
+        !lightbox
+      ) {
         if (useChatStore.getState().replyTarget) {
           setReplyTarget(null);
         } else if (showInfoDrawer) {
@@ -62,11 +73,42 @@ export const ChatLayout: FC = () => {
       ? activeConversation.members.find((m) => m.userId !== user.id) ?? null
       : null;
 
+  const currentIdx = activeConversation
+    ? conversations.findIndex((c) => c.id === activeConversation.id)
+    : -1;
+  const prevConversation = currentIdx > 0 ? conversations[currentIdx - 1] : null;
+  const nextConversation =
+    currentIdx >= 0 && currentIdx < conversations.length - 1
+      ? conversations[currentIdx + 1]
+      : null;
+
+  const focusSidebarSearch = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768 && activeConversation) {
+      void selectConversation(null, token, user, privateKey);
+    }
+    window.setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 30);
+  };
+
   return (
-    <div className="h-dvh w-full overflow-hidden flex bg-[var(--bg-app)] text-[var(--text-primary)] md:p-3.5 md:gap-3.5">
+    <div className="h-dvh w-full overflow-hidden flex bg-[var(--bg-app)] text-[var(--text-primary)] md:p-2.5 md:gap-2.5">
+      <AppRail
+        collapsed={railCollapsed}
+        activeTab={filterTab}
+        onSelectTab={setFilterTab}
+        onNewChat={focusSidebarSearch}
+        onOpenNewGroup={() => setShowNewGroup(true)}
+        onOpenSettings={() => setShowSettings(true)}
+      />
+
       <div className={`${activeConversation ? 'hidden md:flex' : 'flex'} w-full md:w-auto h-full`}>
         <Sidebar
           searchInputRef={searchInputRef}
+          filterTab={filterTab}
+          onChangeFilterTab={setFilterTab}
+          railCollapsed={railCollapsed}
+          onToggleRail={() => setRailCollapsed((prev) => !prev)}
           onOpenNewGroup={() => setShowNewGroup(true)}
           onOpenSettings={() => setShowSettings(true)}
         />
@@ -79,6 +121,26 @@ export const ChatLayout: FC = () => {
             setShowInfoDrawer(false);
             void selectConversation(null, token, user, privateKey);
           }}
+          onCloseConversation={() => {
+            setShowInfoDrawer(false);
+            void selectConversation(null, token, user, privateKey);
+          }}
+          onPrevConversation={() => {
+            if (prevConversation) {
+              setShowInfoDrawer(false);
+              void selectConversation(prevConversation.id, token, user, privateKey);
+            }
+          }}
+          onNextConversation={() => {
+            if (nextConversation) {
+              setShowInfoDrawer(false);
+              void selectConversation(nextConversation.id, token, user, privateKey);
+            }
+          }}
+          hasPrevConversation={Boolean(prevConversation)}
+          hasNextConversation={Boolean(nextConversation)}
+          onFocusSearch={() => searchInputRef.current?.focus()}
+          onOpenNewGroup={() => setShowNewGroup(true)}
           onToggleInfo={() => setShowInfoDrawer((prev) => !prev)}
           onOpenSafetyModal={() => setShowSafetyModal(true)}
           onPreviewImage={(src, fileName) => setLightbox({ src, fileName })}
@@ -116,4 +178,3 @@ export const ChatLayout: FC = () => {
     </div>
   );
 };
-

@@ -10,6 +10,8 @@ import {
 import {
   AlertCircle,
   ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
   FileText,
   Info,
   Lock,
@@ -18,11 +20,13 @@ import {
   SendHorizontal,
   ShieldCheck,
   Smile,
+  Users,
   X,
 } from 'lucide-react';
 import { MAX_ATTACHMENT_BYTES } from '@chat/shared';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { useChatStore, type UiConversation } from '../../stores/useChatStore';
+import { useThemeStore } from '../../stores/useThemeStore';
 import { Avatar } from '../common/Avatar';
 import { MessageBubble } from './MessageBubble';
 
@@ -31,6 +35,13 @@ const COMPOSER_EMOJIS = ['😀', '😂', '🥰', '👍', '🙏', '🔥', '🎉',
 interface ChatCanvasProps {
   conversation: UiConversation | null;
   onBackMobile: () => void;
+  onCloseConversation: () => void;
+  onPrevConversation: () => void;
+  onNextConversation: () => void;
+  hasPrevConversation: boolean;
+  hasNextConversation: boolean;
+  onFocusSearch: () => void;
+  onOpenNewGroup: () => void;
   onToggleInfo: () => void;
   onOpenSafetyModal: () => void;
   onPreviewImage: (src: string, fileName: string) => void;
@@ -63,11 +74,19 @@ function formatLastSeen(ts: number | null): string {
 export const ChatCanvas: FC<ChatCanvasProps> = ({
   conversation,
   onBackMobile,
+  onCloseConversation,
+  onPrevConversation,
+  onNextConversation,
+  hasPrevConversation,
+  hasNextConversation,
+  onFocusSearch,
+  onOpenNewGroup,
   onToggleInfo,
   onOpenSafetyModal,
   onPreviewImage,
 }) => {
   const { user, token, privateKey } = useAuthStore();
+  const { theme } = useThemeStore();
   const {
     messagesByConv,
     messagesLoading,
@@ -117,19 +136,40 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
 
   if (!conversation) {
     return (
-      <main className="hidden md:flex flex-1 flex-col items-center justify-center p-8 chat-canvas-surface md:rounded-[26px] md:border md:border-[var(--border-subtle)] overflow-hidden">
-        <div className="max-w-sm rounded-3xl bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] p-7 text-center space-y-3.5 shadow-sm">
-          <div className="w-12 h-12 mx-auto rounded-2xl bg-[var(--bg-canvas)] border border-[var(--border-subtle)] flex items-center justify-center">
-            <Lock className="w-5 h-5 text-[var(--status-e2ee)]" aria-hidden="true" />
+      <main className="hidden md:flex flex-1 flex-col items-center justify-center p-8 chat-canvas-surface md:rounded-2xl md:border md:border-[var(--border-subtle)] shadow-sm overflow-hidden">
+        <div className="max-w-md flex flex-col items-center text-center gap-4">
+          <img
+            src={theme === 'dark' ? '/empty-state.svg' : '/empty-state-light.svg'}
+            alt="Belum ada obrolan dipilih"
+            className="w-40 h-40 select-none"
+          />
+          <div className="space-y-1.5">
+            <h1 className="text-lg font-semibold text-[var(--text-primary)]">
+              Ruang obrolan masih kosong
+            </h1>
+            <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+              Pilih percakapan di daftar sebelah kiri atau mulai ruang baru yang terenkripsi
+              end-to-end.
+            </p>
           </div>
-          <h1 className="text-lg font-semibold text-[var(--text-primary)]">
-            Ruang ngobrol santai
-          </h1>
-          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-            Pilih obrolan di sebelah kiri atau cari{' '}
-            <span className="font-medium text-[var(--text-primary)]">@username</span> buat mulai
-            cerita tanpa ribet dan tetap privat.
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+            <button
+              type="button"
+              onClick={onFocusSearch}
+              className="h-9 px-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-sidebar)] hover:bg-[var(--bg-hover)] text-xs font-medium text-[var(--text-primary)] inline-flex items-center gap-2 transition-colors"
+            >
+              <Search className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
+              <span>Cari @username</span>
+            </button>
+            <button
+              type="button"
+              onClick={onOpenNewGroup}
+              className="h-9 px-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-sidebar)] hover:bg-[var(--bg-hover)] text-xs font-medium text-[var(--text-primary)] inline-flex items-center gap-2 transition-colors"
+            >
+              <Users className="w-3.5 h-3.5 text-[var(--status-e2ee)]" aria-hidden="true" />
+              <span>Buat Grup Baru</span>
+            </button>
+          </div>
         </div>
       </main>
     );
@@ -231,34 +271,72 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
   };
 
   return (
-    <main className="flex-1 flex flex-col h-full min-w-0 chat-canvas-surface md:rounded-[26px] md:border md:border-[var(--border-subtle)] overflow-hidden">
-      <header className="mx-3 mt-3 sm:mx-5 sm:mt-4 px-3 sm:px-4 py-2 rounded-2xl bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] shadow-sm flex items-center justify-between gap-2 shrink-0">
-        <div className="flex items-center gap-2.5 min-w-0">
+    <main className="flex-1 flex flex-col h-full min-w-0 chat-canvas-surface md:rounded-2xl md:border md:border-[var(--border-subtle)] shadow-sm overflow-hidden">
+      <header className="min-h-14 px-3 sm:px-4 py-2 bg-[var(--bg-sidebar)] border-b border-[var(--border-subtle)] flex items-center justify-between gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 min-w-0">
           <button
             type="button"
             onClick={onBackMobile}
             aria-label="Kembali ke daftar chat"
-            className="md:hidden min-w-[44px] min-h-[44px] p-2 rounded-full text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center"
+            className="md:hidden w-9 h-9 rounded-lg text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center shrink-0"
           >
-            <ArrowLeft className="w-5 h-5" aria-hidden="true" />
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
           </button>
 
           <button
             type="button"
+            onClick={onCloseConversation}
+            aria-label="Tutup ruang obrolan"
+            title="Tutup obrolan"
+            className="hidden md:inline-flex w-8 h-8 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] items-center justify-center shrink-0 transition-colors"
+          >
+            <X className="w-4 h-4" aria-hidden="true" />
+          </button>
+
+          <div
+            aria-hidden="true"
+            className="hidden md:block h-4 w-px bg-[var(--border-subtle)] mx-0.5 shrink-0"
+          />
+
+          <div className="hidden md:flex items-center gap-0.5 shrink-0">
+            <button
+              type="button"
+              disabled={!hasPrevConversation}
+              onClick={onPrevConversation}
+              aria-label="Obrolan sebelumnya"
+              title="Obrolan sebelumnya"
+              className="w-8 h-8 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] disabled:opacity-35 inline-flex items-center justify-center transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              disabled={!hasNextConversation}
+              onClick={onNextConversation}
+              aria-label="Obrolan berikutnya"
+              title="Obrolan berikutnya"
+              className="w-8 h-8 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] disabled:opacity-35 inline-flex items-center justify-center transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
+            </button>
+          </div>
+
+          <button
+            type="button"
             onClick={onToggleInfo}
-            className="flex items-center gap-3 min-w-0 text-left rounded-2xl px-2 py-1 hover:bg-[var(--bg-hover)]"
+            className="flex items-center gap-2.5 min-w-0 text-left rounded-xl px-2 py-1 hover:bg-[var(--bg-hover)] transition-colors"
           >
             <Avatar
               name={headerTitle}
               avatarUrl={isGroup ? conversation.avatarUrl : peer?.avatarUrl}
               isOnline={peer?.isOnline}
               isGroup={isGroup}
-              size="md"
+              size="sm"
             />
             <div className="min-w-0">
-              <h1 className="text-sm font-semibold truncate">{headerTitle}</h1>
+              <h1 className="text-[13.5px] font-semibold truncate">{headerTitle}</h1>
               <p
-                className={`text-xs truncate ${
+                className={`text-[11.5px] truncate ${
                   typingIds.length > 0 ? 'text-[var(--status-e2ee)] font-medium' : 'text-[var(--text-secondary)]'
                 }`}
               >
@@ -268,14 +346,14 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
           </button>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           {!isGroup && peer && (
             <button
               type="button"
               onClick={onOpenSafetyModal}
               aria-label="Lihat verifikasi keamanan obrolan"
               title="Verifikasi Keamanan"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-xs font-medium text-[var(--status-e2ee)] hover:bg-[var(--bg-hover)]"
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[var(--bg-canvas)] border border-[var(--border-subtle)] text-[11px] font-medium text-[var(--status-e2ee)] hover:bg-[var(--bg-hover)] transition-colors"
             >
               <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Terenkripsi</span>
@@ -287,7 +365,11 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
             onClick={() => setShowInChatSearch((prev) => !prev)}
             aria-label="Cari pesan di obrolan ini"
             title="Cari pesan"
-            className="min-w-[40px] min-h-[40px] p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center"
+            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+              showInChatSearch
+                ? 'bg-[var(--bg-active)] text-[var(--text-primary)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
+            }`}
           >
             <Search className="w-4 h-4" aria-hidden="true" />
           </button>
@@ -296,8 +378,8 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
             type="button"
             onClick={onToggleInfo}
             aria-label="Buka informasi percakapan"
-            title="Info"
-            className="min-w-[40px] min-h-[40px] p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center"
+            title="Info ruang obrolan"
+            className="w-8 h-8 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex items-center justify-center transition-colors"
           >
             <Info className="w-4 h-4" aria-hidden="true" />
           </button>
@@ -305,7 +387,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
       </header>
 
       {showInChatSearch && (
-        <div className="mx-3 mt-2 sm:mx-5 px-3.5 py-2 rounded-2xl bg-[var(--bg-sidebar)] border border-[var(--border-subtle)] flex items-center gap-2 shrink-0">
+        <div className="px-4 py-2 bg-[var(--bg-sidebar)] border-b border-[var(--border-subtle)] flex items-center gap-2 shrink-0">
           <label htmlFor="inchat-search" className="sr-only">
             Cari kata kunci dalam pesan
           </label>
@@ -316,7 +398,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
             value={inChatQuery}
             onChange={(e) => setInChatQuery(e.target.value)}
             placeholder="Cari kata di obrolan ini..."
-            className="flex-1 px-4 py-1.5 rounded-full bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-sm"
+            className="flex-1 h-8 px-3 rounded-lg bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] text-xs"
           />
           <button
             type="button"
@@ -410,7 +492,7 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
         </div>
       </div>
 
-      <div className="mx-3 mb-3 sm:mx-5 sm:mb-4 rounded-[26px] bg-[var(--bg-input)] border border-[var(--border-subtle)] shadow-sm shrink-0 overflow-visible has-[textarea:focus-visible]:outline has-[textarea:focus-visible]:outline-2 has-[textarea:focus-visible]:outline-[var(--accent-primary)] has-[textarea:focus-visible]:outline-offset-2">
+      <div className="mx-3 mb-3 sm:mx-5 sm:mb-4 rounded-2xl bg-[var(--bg-input)] border border-[var(--border-subtle)] shadow-sm shrink-0 overflow-visible has-[textarea:focus-visible]:outline has-[textarea:focus-visible]:outline-2 has-[textarea:focus-visible]:outline-[var(--accent-primary)] has-[textarea:focus-visible]:outline-offset-2">
         {replyTarget && (
           <div className="px-4 py-2.5 border-b border-[var(--border-subtle)] flex items-center justify-between gap-3">
             <div className="min-w-0 pl-3 border-l-[3px] border-[var(--status-e2ee)]">
@@ -546,9 +628,9 @@ export const ChatCanvas: FC<ChatCanvasProps> = ({
               type="submit"
               disabled={sending || (!text.trim() && !selectedFile)}
               aria-label="Kirim pesan"
-              className="min-w-[42px] min-h-[42px] w-[42px] h-[42px] rounded-full bg-[var(--accent-primary)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)] disabled:opacity-45 flex items-center justify-center shrink-0"
+              className="min-w-[40px] min-h-[40px] w-[40px] h-[40px] rounded-xl bg-[var(--accent-primary)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)] disabled:opacity-45 flex items-center justify-center shrink-0 transition-colors"
             >
-              <SendHorizontal className="w-5 h-5" aria-hidden="true" />
+              <SendHorizontal className="w-4 h-4" aria-hidden="true" />
             </button>
           </form>
         )}
