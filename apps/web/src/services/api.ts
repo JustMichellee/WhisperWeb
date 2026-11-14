@@ -10,6 +10,17 @@ import type {
 } from '@chat/shared';
 import type { PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/browser';
 
+const DEFAULT_API_BASE = (import.meta.env.VITE_API_URL ?? '').trim().replace(/\/+$/, '');
+
+/**
+ * Resolves a relative API path against an optional configured backend base URL.
+ */
+export function resolveApiUrl(path: string, apiBase = DEFAULT_API_BASE): string {
+  const cleanBase = apiBase.trim().replace(/\/+$/, '');
+  if (!cleanBase) return path;
+  return path.startsWith('/') ? `${cleanBase}${path}` : `${cleanBase}/${path}`;
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -28,7 +39,7 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const res = await fetch(path, { ...options, headers });
+  const res = await fetch(resolveApiUrl(path), { ...options, headers });
   if (!res.ok) {
     const data = (await res.json().catch(() => null)) as { error?: string } | null;
     throw new ApiError(data?.error ?? `Permintaan gagal (${res.status})`, res.status);
@@ -181,7 +192,7 @@ export const apiClient = {
     ),
 
   downloadEncryptedBlob: async (token: string, attachmentId: string): Promise<ArrayBuffer> => {
-    const res = await fetch(`/api/media/${encodeURIComponent(attachmentId)}`, {
+    const res = await fetch(resolveApiUrl(`/api/media/${encodeURIComponent(attachmentId)}`), {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) {

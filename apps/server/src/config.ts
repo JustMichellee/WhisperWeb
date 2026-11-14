@@ -40,7 +40,7 @@ export function createConfig(overrides?: Partial<Pick<ServerConfig, 'dataDir' | 
 
   const origins = (process.env.CORS_ORIGINS ?? 'http://localhost:5173,http://127.0.0.1:5173')
     .split(',')
-    .map((o) => o.trim())
+    .map((o) => o.trim().replace(/\/+$/, ''))
     .filter(Boolean);
 
   return {
@@ -49,7 +49,10 @@ export function createConfig(overrides?: Partial<Pick<ServerConfig, 'dataDir' | 
     dbPath,
     uploadsDir,
     jwtSecret: loadOrCreateSecret(dataDir),
-    rpId: process.env.WEBAUTHN_RP_ID ?? 'localhost',
+    rpId: (process.env.WEBAUTHN_RP_ID ?? 'localhost')
+      .trim()
+      .replace(/^https?:\/\//i, '')
+      .replace(/\/+$/, ''),
     rpName: 'WhisperWeb',
     origins,
   };

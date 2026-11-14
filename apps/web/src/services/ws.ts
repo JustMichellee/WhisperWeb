@@ -3,6 +3,35 @@ import type { ClientWsEnvelope, ServerWsEnvelope } from '@chat/shared';
 type EventListener = (envelope: ServerWsEnvelope) => void;
 type StatusListener = (connected: boolean) => void;
 
+export interface WebSocketUrlOptions {
+  wsUrl?: string;
+  apiUrl?: string;
+  locationProtocol?: string;
+  locationHost?: string;
+}
+
+/**
+ * Builds the authenticated WebSocket endpoint URL from env config or current browser origin.
+ */
+export function buildWebSocketUrl(token: string, options: WebSocketUrlOptions = {}): string {
+  const explicitWs = (options.wsUrl ?? import.meta.env.VITE_WS_URL ?? '').trim().replace(/\/+$/, '');
+  const apiBase = (options.apiUrl ?? import.meta.env.VITE_API_URL ?? '').trim().replace(/\/+$/, '');
+  const rawBase = explicitWs || apiBase;
+
+  let baseWsUrl: string;
+  if (rawBase) {
+    const normalized = rawBase.replace(/^https:\/\//i, 'wss://').replace(/^http:\/\//i, 'ws://');
+    baseWsUrl = normalized.endsWith('/ws') ? normalized : `${normalized}/ws`;
+  } else {
+    const locProtocol = options.locationProtocol ?? window.location.protocol;
+    const locHost = options.locationHost ?? window.location.host;
+    const protocol = locProtocol === 'https:' ? 'wss:' : 'ws:';
+    baseWsUrl = `${protocol}//${locHost}/ws`;
+  }
+
+  return `${baseWsUrl}?token=${encodeURIComponent(token)}`;
+}
+
 export class WebSocketManager {
   private ws: WebSocket | null = null;
   private token: string | null = null;
@@ -60,8 +89,7 @@ export class WebSocketManager {
 
   private openSocket(): void {
     if (!this.token) return;
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const url = `${protocol}//${window.location.host}/ws?token=${encodeURIComponent(this.token)}`;
+    const url = buildWebSocketUrl(this.token);
     const socket = new WebSocket(url);
     this.ws = socket;
 

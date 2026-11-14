@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build --workspace=@chat/shared && npm run build --workspace=@chat/web",
+  "outputDirectory": "apps/web/dist",
+  "rewrites": [
+    {
+      "source": "/((?!assets/|manifest\\.json).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+
